@@ -60,17 +60,12 @@ function ex_updateClickedExcavitionIcon(excavitionName) {
         const icon = ex_excavitionIcons[i];
         if (icon.dataset.mapName === excavitionName) {
             icon.style.opacity = '0.5';
-            const img = icon.querySelector('img');
-            if (img) {
-                img.style.filter = 'grayscale(50%) drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))';
-            }
         }
     }
 }
 
 function ex_markExcavitionAsClicked(excavitionName) {
     if (!ex_isExcavitionAvailable(excavitionName)) {
-        console.log(`Excavition ${excavitionName} is not available yet`);
         return false;
     }
     
@@ -103,7 +98,6 @@ function ex_markExcavitionAsClicked(excavitionName) {
 
     try {
         localStorage.setItem('clickedExcavitions', JSON.stringify(clickedExcavitionsData));
-        console.log(`✅ Excavition ${excavitionName} marked as clicked`);
     } catch (error) {
         console.error("Error saving to localStorage:", error);
     }
@@ -116,7 +110,7 @@ function ex_markExcavitionAsClicked(excavitionName) {
 }
 
 function ex_formatTimeRemaining(milliseconds) {
-    if (milliseconds <= 0) return window.i18n?.t("excavition.available") || "Available";
+    if (milliseconds <= 0) return window.i18n.t("excavition.available") || "Available";
     
     const seconds = Math.floor((milliseconds / 1000) % 60).toString().padStart(2, '0');
     const minutes = Math.floor((milliseconds / (1000 * 60)) % 60).toString().padStart(2, '0');
@@ -147,10 +141,6 @@ function ex_updateExcavitionTimers() {
             
             if (timeRemaining <= 0) {
                 icon.style.opacity = '1.0';
-                const img = icon.querySelector('img');
-                if (img) {
-                    img.style.filter = 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))';
-                }
                 
                 delete clickedExcavitionsData[excavitionName];
                 try {
@@ -160,17 +150,9 @@ function ex_updateExcavitionTimers() {
                 }
             } else {
                 icon.style.opacity = '0.5';
-                const img = icon.querySelector('img');
-                if (img) {
-                    img.style.filter = 'grayscale(50%) drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))';
-                }
             }
         } else {
             icon.style.opacity = '1.0';
-            const img = icon.querySelector('img');
-            if (img) {
-                img.style.filter = 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))';
-            }
         }
     });
 }
@@ -270,12 +252,12 @@ function ex_createExcavitionTooltip(excavitionName, x, y, isRightClick = false) 
     
     const displayName = excavitionName;
     
-    let tooltipHTML = `<div class="tooltip-header">${window.i18n?.t("excavition.prefix") || "Excavition"}: ${displayName}</div>`;
+    let tooltipHTML = `<div class="tooltip-header">${window.i18n.t("excavition.prefix") || "Excavition"}: ${displayName}</div>`;
     
     if (showCooldown) {
         tooltipHTML += `
             <div class="tooltip-info">
-                ${window.i18n?.t("excavition.cooldown") || "Reset"}: <span class="tooltip-cooldown">${cooldownRemainingTime}</span>
+                ${window.i18n.t("excavition.cooldown") || "Reset"}: <span class="tooltip-cooldown">${cooldownRemainingTime}</span>
             </div>
         `;
     }
@@ -741,8 +723,6 @@ function ex_showImagePreview(excavitionName) {
             return;
         }
 
-        console.log(`🖼️ Opening image preview for: ${excavitionName}`);
-
         ex_isPreviewOpen = true;
         ex_previewClickCooldown = true;
 
@@ -896,7 +876,7 @@ function ex_createExcavitionIcon(excavitionName, mapPos) {
     icon.style.top = `${y}px`;
     icon.style.display = 'none'; // Hide icons by default
     icon.style.position = 'absolute';
-    icon.style.width = '34px';
+    icon.style.width = '34px'; // Same as PokéStop icons
     icon.style.height = '43px';
     icon.style.transform = 'translate(-50%, -50%)';
     icon.style.zIndex = '20';
@@ -924,9 +904,8 @@ function ex_createExcavitionIcon(excavitionName, mapPos) {
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'contain';
-    img.style.filter = isAvailable ? 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))' : 'grayscale(50%) drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))';
+    img.style.filter = 'drop-shadow(0 0 4px rgba(0, 0, 0, 0.5))';
 
-    // ===== EVENTOS DESKTOP (PC) =====
     icon.addEventListener('mouseover', function(e) {
         ex_createExcavitionTooltip(site.tooltip || excavitionName, e.clientX, e.clientY);
     });
@@ -943,7 +922,7 @@ function ex_createExcavitionIcon(excavitionName, mapPos) {
         const tooltip = document.getElementById('excavition-tooltip');
         if (tooltip) {
             tooltip.style.display = 'none';
-            ex_activeTooltipExcavitionName = null;
+            ex_activeTooltipExcavitionName = null; // Reset active tooltip
         }
     });
 
@@ -964,105 +943,66 @@ function ex_createExcavitionIcon(excavitionName, mapPos) {
         ex_createExcavitionTooltip(site.tooltip || excavitionName, e.clientX, e.clientY, true);
     });
 
-    // ===== EVENTOS MOBILE (TOUCH) =====
-    (function() {
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchMoved = false;
-        let longPressTimer = null;
+// ===== MOBILE TOUCH SUPPORT =====
+let ex_touchStartTime = 0;
+let ex_touchStartX = 0;
+let ex_touchStartY = 0;
+let ex_touchMoved = false;
 
-        icon.addEventListener('touchstart', function(e) {
-            console.log(`📱 Touch start on excavation: ${excavitionName}`);
-            touchStartTime = Date.now();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            touchMoved = false;
-            
-            // Timer para detectar long press (mantener presionado)
-            longPressTimer = setTimeout(() => {
-                if (!touchMoved && !window.isRouteCreatorActive) {
-                    console.log(`⏱️ Long press detected on: ${excavitionName}`);
-                    // Long press detectado: abrir preview
-                    ex_showImagePreview(excavitionName);
-                    longPressTimer = null;
-                }
-            }, 500); // 500ms para long press
-            
-        }, { passive: true });
+icon.addEventListener('touchstart', function(e) {
+    ex_touchStartTime = Date.now();
+    ex_touchStartX = e.touches[0].clientX;
+    ex_touchStartY = e.touches[0].clientY;
+    ex_touchMoved = false;
+}, { passive: true });
 
-        icon.addEventListener('touchmove', function(e) {
-            const moveX = Math.abs(e.touches[0].clientX - touchStartX);
-            const moveY = Math.abs(e.touches[0].clientY - touchStartY);
-            
-            // Si se mueve más de 10px, cancelar long press
-            if (moveX > 10 || moveY > 10) {
-                touchMoved = true;
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-            }
-        }, { passive: true });
+icon.addEventListener('touchmove', function(e) {
+    const moveX = Math.abs(e.touches[0].clientX - ex_touchStartX);
+    const moveY = Math.abs(e.touches[0].clientY - ex_touchStartY);
+    
+    if (moveX > 10 || moveY > 10) {
+        ex_touchMoved = true;
+    }
+}, { passive: true });
 
-        icon.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            
-            const touchDuration = Date.now() - touchStartTime;
-            
-            console.log(`📱 Touch end on: ${excavitionName}, duration: ${touchDuration}ms, moved: ${touchMoved}`);
-            
-            // Cancelar long press timer si existe
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-            
-            // Solo procesar si fue un tap corto y sin movimiento
-            if (touchDuration < 500 && !touchMoved) {
-                console.log(`👆 Short tap detected on: ${excavitionName}`);
+icon.addEventListener('touchend', function(e) {
+    e.preventDefault();
+    
+    const touchDuration = Date.now() - ex_touchStartTime;
+    
+    // TAP corto (< 300ms) y sin movimiento
+    if (touchDuration < 300 && !ex_touchMoved) {
+        if (window.isRouteCreatorActive) {
+            // Modo creador de rutas
+            window.selectLocationForRoute(excavitionName, "excavation", [x, y]);
+        } else {
+            // Modo normal
+            if (ex_isExcavitionAvailable(excavitionName)) {
+                // Disponible: activar cooldown
+                ex_markExcavitionAsClicked(excavitionName);
                 
-                if (window.isRouteCreatorActive) {
-                    console.log(`🗺️ Adding to route: ${excavitionName}`);
-                    // Modo creador de rutas: agregar a ruta
-                    window.selectLocationForRoute(excavitionName, "excavation", [x, y]);
-                } else {
-                    // Modo normal: activar cooldown o mostrar tooltip
-                    if (ex_isExcavitionAvailable(excavitionName)) {
-                        console.log(`✅ Excavation available, marking as clicked: ${excavitionName}`);
-                        // Disponible: activar cooldown
-                        const success = ex_markExcavitionAsClicked(excavitionName);
-                        
-                        if (success) {
-                            // Feedback visual
-                            icon.style.transform = 'translate(-50%, -50%) scale(0.9)';
-                            setTimeout(() => {
-                                icon.style.transform = 'translate(-50%, -50%) scale(1)';
-                            }, 100);
-                            
-                            // Mostrar tooltip móvil
-                            setTimeout(() => {
-                                ex_showExcavitionTooltipMobile(excavitionName);
-                            }, 150);
-                        }
-                    } else {
-                        console.log(`⏳ Excavation on cooldown, showing tooltip: ${excavitionName}`);
-                        // En cooldown: mostrar tooltip
-                        ex_showExcavitionTooltipMobile(excavitionName);
-                    }
-                }
+                // Mostrar tooltip móvil
+                setTimeout(() => {
+                    ex_showExcavitionTooltipMobile(excavitionName);
+                }, 150);
+                
+                // Feedback visual
+                icon.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                setTimeout(() => {
+                    icon.style.transform = 'translate(-50%, -50%) scale(1)';
+                }, 100);
+            } else {
+                // En cooldown: solo mostrar tooltip
+                ex_showExcavitionTooltipMobile(excavitionName);
             }
-        });
+        }
+    }
+    // TAP largo (>= 300ms): abrir preview de imagen
+    else if (touchDuration >= 300 && !ex_touchMoved && !window.isRouteCreatorActive) {
+        ex_showImagePreview(excavitionName);
+    }
+});
 
-        icon.addEventListener('touchcancel', function() {
-            console.log(`❌ Touch cancelled on: ${excavitionName}`);
-            // Limpiar timer si se cancela el touch
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-    })();
 
     icon.appendChild(img);
     map.appendChild(icon);
@@ -1188,7 +1128,7 @@ function ex_createToggleButton() {
     const excavitionToggleBtn = document.createElement('div');
     excavitionToggleBtn.id = 'excavition-toggle-btn';
     excavitionToggleBtn.className = 'pokestop-toggle-btn'; // Reuse PokéStop button styling
-    excavitionToggleBtn.setAttribute('title', window.i18n?.t('excavition.toggle_title') || 'Show/Hide Excavition Sites');
+    excavitionToggleBtn.setAttribute('title', window.i18n.t('excavition.toggle_title') || 'Show/Hide Excavition Sites');
     
     const img = document.createElement('img');
     img.src = 'resources/excavition/Excavition.webp';
@@ -1196,7 +1136,7 @@ function ex_createToggleButton() {
     
     const span = document.createElement('span');
     span.setAttribute('data-i18n', 'excavition.title');
-    span.textContent = window.i18n?.t('excavition.title') || 'Excavition';
+    span.textContent = window.i18n.t('excavition.title') || 'Excavition';
     
     excavitionToggleBtn.appendChild(img);
     excavitionToggleBtn.appendChild(span);
@@ -1229,148 +1169,6 @@ function ex_setExcavitionSites(sites) {
     } else {
         console.error("Invalid excavition sites data. Expected an array.");
     }
-}
-
-// ===== FUNCIÓN TOOLTIP MÓVIL =====
-function ex_showExcavitionTooltipMobile(excavitionName) {
-    console.log(`📱 Showing mobile tooltip for: ${excavitionName}`);
-    
-    let mobileTooltip = document.getElementById('excavition-mobile-tooltip');
-    
-    if (!mobileTooltip) {
-        mobileTooltip = document.createElement('div');
-        mobileTooltip.id = 'excavition-mobile-tooltip';
-        mobileTooltip.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(40, 44, 52, 0.98);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            min-width: 250px;
-            max-width: 90vw;
-            display: none;
-            text-align: center;
-        `;
-        document.body.appendChild(mobileTooltip);
-    }
-
-    function updateContent() {
-        const isOnCooldown = !ex_isExcavitionAvailable(excavitionName);
-        let cooldownTime = '';
-        
-        if (isOnCooldown) {
-            try {
-                const savedData = localStorage.getItem('clickedExcavitions');
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    if (data[excavitionName]) {
-                        const remaining = data[excavitionName].availableAt - Date.now();
-                        if (remaining > 0) {
-                            cooldownTime = ex_formatTimeRemaining(remaining);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Error getting cooldown:", error);
-            }
-        }
-
-        mobileTooltip.innerHTML = `
-            <div style="position: relative;">
-                <button id="close-ex-mobile-tooltip" style="
-                    position: absolute;
-                    top: -10px;
-                    right: -10px;
-                    background: #ff5722;
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 30px;
-                    height: 30px;
-                    font-size: 20px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                ">&times;</button>
-                
-                <h3 style="margin: 0 0 15px 0; font-size: 20px;">${excavitionName}</h3>
-                
-                ${isOnCooldown ? `
-                    <div style="background-color: #ff5722; padding: 15px; border-radius: 8px;">
-                        <div style="font-size: 14px; margin-bottom: 5px;">
-                            ${window.i18n?.t("excavition.cooldown") || "Reset"}:
-                        </div>
-                        <div style="font-size: 22px; font-weight: bold; font-family: monospace;">
-                            ${cooldownTime}
-                        </div>
-                    </div>
-                ` : `
-                    <div style="background-color: #4CAF50; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold;">
-                        ${window.i18n?.t("excavition.available") || "Available"}
-                    </div>
-                `}
-            </div>
-        `;
-        
-        // Re-attach close button event
-        const closeBtn = document.getElementById('close-ex-mobile-tooltip');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                mobileTooltip.style.display = 'none';
-                if (window.ex_tooltipInterval) {
-                    clearInterval(window.ex_tooltipInterval);
-                    window.ex_tooltipInterval = null;
-                }
-            });
-        }
-    }
-
-    updateContent();
-    mobileTooltip.style.display = 'block';
-
-    // Actualizar cada segundo
-    if (window.ex_tooltipInterval) {
-        clearInterval(window.ex_tooltipInterval);
-    }
-    window.ex_tooltipInterval = setInterval(updateContent, 1000);
-
-    // Cerrar al tocar fuera
-    setTimeout(() => {
-        const closeHandler = (e) => {
-            if (!mobileTooltip.contains(e.target)) {
-                mobileTooltip.style.display = 'none';
-                if (window.ex_tooltipInterval) {
-                    clearInterval(window.ex_tooltipInterval);
-                    window.ex_tooltipInterval = null;
-                }
-                document.removeEventListener('click', closeHandler);
-                document.removeEventListener('touchstart', closeHandler);
-            }
-        };
-        document.addEventListener('click', closeHandler);
-        document.addEventListener('touchstart', closeHandler);
-    }, 100);
-}
-
-// ===== BLOQUEO DE PREVIEW EN MODO CREADOR DE RUTAS =====
-function blockExcavationPreviewInRouteCreatorMode() {
-    const originalShowImagePreview = window.ex_showImagePreview;
-    window.ex_showImagePreview = function(excavationName) {
-        if (window.isRouteCreatorActive) {
-            console.log(`🚫 Blocking preview for ${excavationName} in route creator mode`);
-            return false;
-        }
-        
-        return originalShowImagePreview(excavationName);
-    };
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1410,3 +1208,111 @@ window.ex_toggleExcavitionIcons = ex_toggleExcavitionIcons;
 window.ex_showImagePreview = ex_showImagePreview;
 window.ex_setExcavitionSites = ex_setExcavitionSites;
 window.ex_updateExcavitionTimers = ex_updateExcavitionTimers;
+function blockExcavationPreviewInRouteCreatorMode() {
+    const originalShowImagePreview = window.ex_showImagePreview;
+    window.ex_showImagePreview = function(excavationName) {
+        if (window.isRouteCreatorActive) {
+            console.log(`Blokuję otwieranie podglądu dla ${excavationName} w trybie tworzenia trasy`);
+            return false;
+        }
+        
+        return originalShowImagePreview(excavationName);
+    };
+}
+
+function ex_showExcavitionTooltipMobile(excavitionName) {
+    let mobileTooltip = document.getElementById('excavition-mobile-tooltip');
+    
+    if (!mobileTooltip) {
+        mobileTooltip = document.createElement('div');
+        mobileTooltip.id = 'excavition-mobile-tooltip';
+        mobileTooltip.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(40, 44, 52, 0.98);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            min-width: 250px;
+            max-width: 90vw;
+            display: none;
+        `;
+        document.body.appendChild(mobileTooltip);
+    }
+
+    function updateContent() {
+        const isOnCooldown = !ex_isExcavitionAvailable(excavitionName);
+        let cooldownTime = '';
+        
+        if (isOnCooldown) {
+            const savedData = localStorage.getItem('clickedExcavitions');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                if (data[excavitionName]) {
+                    const remaining = data[excavitionName].availableAt - Date.now();
+                    cooldownTime = ex_formatTimeRemaining(remaining);
+                }
+            }
+        }
+
+        mobileTooltip.innerHTML = `
+            <div style="text-align: center; position: relative;">
+                <button onclick="document.getElementById('excavition-mobile-tooltip').style.display='none'; clearInterval(window.ex_tooltipInterval);" style="
+                    position: absolute;
+                    top: -10px;
+                    right: -10px;
+                    background: #ff5722;
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 30px;
+                    height: 30px;
+                    font-size: 20px;
+                    cursor: pointer;
+                ">&times;</button>
+                
+                <h3 style="margin: 0 0 15px 0; font-size: 20px;">${excavitionName}</h3>
+                
+                ${isOnCooldown ? `
+                    <div style="background-color: #ff5722; padding: 15px; border-radius: 8px;">
+                        <div style="font-size: 14px; margin-bottom: 5px;">
+                            ${window.i18n?.t("excavition.cooldown") || "Reset"}:
+                        </div>
+                        <div style="font-size: 22px; font-weight: bold; font-family: monospace;">
+                            ${cooldownTime}
+                        </div>
+                    </div>
+                ` : `
+                    <div style="background-color: #4CAF50; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold;">
+                        ${window.i18n?.t("excavition.available") || "Available"}
+                    </div>
+                `}
+            </div>
+        `;
+    }
+
+    updateContent();
+    mobileTooltip.style.display = 'block';
+
+    // Actualizar cada segundo
+    if (window.ex_tooltipInterval) clearInterval(window.ex_tooltipInterval);
+    window.ex_tooltipInterval = setInterval(updateContent, 1000);
+
+    // Cerrar al tocar fuera
+    setTimeout(() => {
+        const closeHandler = (e) => {
+            if (!mobileTooltip.contains(e.target)) {
+                mobileTooltip.style.display = 'none';
+                clearInterval(window.ex_tooltipInterval);
+                document.removeEventListener('click', closeHandler);
+                document.removeEventListener('touchstart', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+        document.addEventListener('touchstart', closeHandler);
+    }, 100);
+}

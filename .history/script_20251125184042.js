@@ -1359,11 +1359,6 @@ function displayBossIcons() {
                     if (isBossAvailable(bossName)) {
                         markBossAsKilled(bossName);
                         
-                        // ✅ MOSTRAR TOOLTIP MÓVIL DESPUÉS DE ACTIVAR COOLDOWN
-                        setTimeout(() => {
-                            showBossTooltipMobile(bossName);
-                        }, 150);
-                        
                         // Feedback visual
                         this.style.transform = 'translate(-50%, -50%) scale(0.9)';
                         setTimeout(() => {
@@ -1375,7 +1370,6 @@ function displayBossIcons() {
                     }
                 }
             });
-
         })();
         
         map.appendChild(icon);
@@ -3498,167 +3492,4 @@ document.addEventListener('touchstart', function(e) {
         }
     }
 }, { passive: true });
-
-
-function showBossTooltipMobile(bossName) {
-    const bossData = bosses[bossName];
-    if (!bossData) return;
-
-    // Crear o reutilizar el tooltip móvil para bosses
-    let mobileTooltip = document.getElementById('boss-mobile-tooltip');
-    
-    if (!mobileTooltip) {
-        mobileTooltip = document.createElement('div');
-        mobileTooltip.id = 'boss-mobile-tooltip';
-        mobileTooltip.style.position = 'fixed';
-        mobileTooltip.style.top = '50%';
-        mobileTooltip.style.left = '50%';
-        mobileTooltip.style.transform = 'translate(-50%, -50%)';
-        mobileTooltip.style.backgroundColor = 'rgba(40, 44, 52, 0.98)';
-        mobileTooltip.style.color = 'white';
-        mobileTooltip.style.padding = '20px';
-        mobileTooltip.style.borderRadius = '10px';
-        mobileTooltip.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
-        mobileTooltip.style.zIndex = '10000';
-        mobileTooltip.style.minWidth = '250px';
-        mobileTooltip.style.maxWidth = '90vw';
-        mobileTooltip.style.display = 'none';
-        document.body.appendChild(mobileTooltip);
-    }
-
-    // Función para actualizar el contenido del tooltip
-    function updateMobileTooltipContent() {
-        let isOnCooldown = !isBossAvailable(bossName);
-        let cooldownRemainingTime = '';
-        let showCooldown = false;
-
-        if (isOnCooldown) {
-            try {
-                const savedData = localStorage.getItem('killedBosses');
-                if (savedData) {
-                    const killedBosses = JSON.parse(savedData);
-                    if (killedBosses[bossName]) {
-                        const availableAt = killedBosses[bossName].availableAt;
-                        const now = Date.now();
-                        const timeRemaining = availableAt - now;
-                        if (timeRemaining > 0) {
-                            cooldownRemainingTime = formatTimeRemaining(timeRemaining);
-                            showCooldown = true;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Error getting boss cooldown:", error);
-            }
-        }
-
-        let tooltipContent = `
-            <div style="text-align: center; position: relative;">
-                <button id="close-boss-mobile-tooltip" style="
-                    position: absolute;
-                    top: -10px;
-                    right: -10px;
-                    background: #ff5722;
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 30px;
-                    height: 30px;
-                    font-size: 20px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                ">&times;</button>
-                
-                <h3 style="margin: 0 0 15px 0; font-size: 20px; color: white;">
-                    ${bossName}
-                </h3>
-        `;
-
-        if (showCooldown) {
-            tooltipContent += `
-                <div style="
-                    background-color: #ff5722; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    text-align: center;
-                ">
-                    <div style="font-size: 14px; margin-bottom: 5px;">
-                        ${window.i18n.t("boss.cooldown") || "Cooldown"}:
-                    </div>
-                    <div style="font-size: 22px; font-weight: bold; font-family: monospace;">
-                        ${cooldownRemainingTime}
-                    </div>
-                </div>
-            `;
-        } else {
-            tooltipContent += `
-                <div style="
-                    background-color: #4CAF50; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    text-align: center;
-                    font-size: 18px;
-                    font-weight: bold;
-                ">
-                    ${window.i18n.t("boss.available") || "Available"}
-                </div>
-            `;
-        }
-        
-        tooltipContent += '</div>';
-        
-        mobileTooltip.innerHTML = tooltipContent;
-
-        // Reattach close button event
-        const closeButton = document.getElementById('close-boss-mobile-tooltip');
-        if (closeButton) {
-            closeButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (mobileTooltip.updateInterval) {
-                    clearInterval(mobileTooltip.updateInterval);
-                    mobileTooltip.updateInterval = null;
-                }
-                mobileTooltip.style.display = 'none';
-                mobileTooltip.dataset.currentBoss = null;
-            });
-        }
-    }
-
-    // Actualizar contenido inmediatamente
-    updateMobileTooltipContent();
-
-    // Mostrar el tooltip
-    mobileTooltip.style.display = 'block';
-    mobileTooltip.dataset.currentBoss = bossName;
-
-    // Limpiar intervalo anterior si existe
-    if (mobileTooltip.updateInterval) {
-        clearInterval(mobileTooltip.updateInterval);
-    }
-
-    // Crear nuevo intervalo para actualización continua (cada segundo)
-    mobileTooltip.updateInterval = setInterval(updateMobileTooltipContent, 1000);
-
-    // Cerrar al tocar fuera del tooltip
-    const handleOutsideClick = function(e) {
-        if (!mobileTooltip.contains(e.target)) {
-            if (mobileTooltip.updateInterval) {
-                clearInterval(mobileTooltip.updateInterval);
-                mobileTooltip.updateInterval = null;
-            }
-            mobileTooltip.style.display = 'none';
-            mobileTooltip.dataset.currentBoss = null;
-            document.removeEventListener('click', handleOutsideClick);
-            document.removeEventListener('touchstart', handleOutsideClick);
-        }
-    };
-
-    setTimeout(() => {
-        document.addEventListener('click', handleOutsideClick);
-        document.addEventListener('touchstart', handleOutsideClick);
-    }, 100);
-}
 

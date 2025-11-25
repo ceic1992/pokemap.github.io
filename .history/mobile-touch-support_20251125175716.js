@@ -379,3 +379,31 @@ window.addEventListener('profileChanged', function() {
 });
 
 
+// ========== FUNCIÓN GLOBAL PARA NOTIFICACIÓN ==========
+window.showMobileCooldownNotification = function(type, name) {
+    const existingNotification = document.querySelector('.cooldown-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = 'cooldown-notification';
+    notification.innerHTML = `
+        <div class="cooldown-notification-content">
+            <span class="cooldown-icon">⏱️</span>
+            <div class="cooldown-text">
+                <strong>${type} Activado</strong>
+                <span>${name}</span>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.classList.add('show'), 10);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 2000);
+};
+
+console.log('✅ Función showMobileCooldownNotification disponible globalmente');

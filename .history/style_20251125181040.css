@@ -2837,19 +2837,19 @@ body {
 /* Tooltip en cooldown */
 .pokestop-tooltip-cooldown {
     border-color: #ff5722;
-    background-color: rgb(37, 37, 37);
+    background-color: rgba(102, 126, 234, 0.3);
 }
 
 /* Header del tooltip */
 .tooltip-header {
     font-weight: bold;
-    font-size: 12px;
+    font-size: 15px;
     margin-bottom: 6px;
 }
 
 /* Info del tooltip */
 .tooltip-info {
-    font-size: 12px;
+    font-size: 13px;
     margin-top: 4px;
 }
 

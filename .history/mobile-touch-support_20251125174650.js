@@ -207,10 +207,10 @@ if (sidebar) {
 }
 
 
-// ========== ACTIVAR COOLDOWN CON 1 TAP EN MÓVIL ==========
+// ========== ACTIVAR COOLDOWN CON DOBLE TAP EN MÓVIL ==========
 
 function initMobileCooldownTap() {
-    console.log('📱 Inicializando tap para activar cooldown en móvil');
+    console.log('📱 Inicializando doble tap para activar cooldown en móvil');
     
     // Detectar si es dispositivo móvil
     function isMobile() {
@@ -219,7 +219,7 @@ function initMobileCooldownTap() {
     }
     
     if (!isMobile()) {
-        console.log('📱 No es móvil, tap para cooldown desactivado');
+        console.log('📱 No es móvil, doble tap desactivado');
         return;
     }
     
@@ -237,8 +237,14 @@ function initMobileCooldownTap() {
         return profiles[currentProfileName];
     }
     
+    function saveProfiles() {
+        const profiles = JSON.parse(localStorage.getItem('profiles')) || {};
+        localStorage.setItem('profiles', JSON.stringify(profiles));
+    }
+    
     // ========== NOTIFICACIÓN VISUAL ==========
     function showCooldownNotification(type, name) {
+        // Remover notificación anterior si existe
         const existingNotification = document.querySelector('.cooldown-notification');
         if (existingNotification) {
             existingNotification.remove();
@@ -257,125 +263,202 @@ function initMobileCooldownTap() {
         `;
         
         document.body.appendChild(notification);
+        
+        // Animar entrada
         setTimeout(() => notification.classList.add('show'), 10);
+        
+        // Remover después de 2 segundos
         setTimeout(() => {
             notification.classList.remove('show');
             setTimeout(() => notification.remove(), 300);
         }, 2000);
     }
     
-    // ========== INTERCEPTAR CLICKS EN EL MAPA ==========
-    const mapContainer = document.getElementById('map');
-    if (!mapContainer) {
-        console.warn('⚠️ No se encontró el contenedor del mapa');
-        return;
-    }
-    
-    // Usar capture phase para interceptar ANTES que otros eventos
-    mapContainer.addEventListener('click', function(e) {
-        // Solo en móvil
-        if (!isMobile()) return;
+    // ========== POKESTOP DOBLE TAP ==========
+    function handlePokestopDoubleTap(icon, pokestop) {
+        let lastTap = 0;
         
-        const target = e.target;
-        const profile = getCurrentProfile();
-        const profiles = JSON.parse(localStorage.getItem('profiles')) || {};
-        const currentProfileName = localStorage.getItem('currentProfile') || 'Default';
-        const now = Date.now();
-        let cooldownActivated = false;
-        
-        // ========== POKESTOP ==========
-        if (target.classList.contains('pokestop-icon')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
+        icon.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
             
-            // Buscar el pokestop en el array pokestopIcons
-            const pokestopData = pokestopIcons.find(item => item.icon === target);
-            if (pokestopData && pokestopData.pokestop) {
-                profile.pokestops[pokestopData.pokestop.name] = now;
+            // Detectar doble tap (menos de 300ms entre taps)
+            if (tapLength < 300 && tapLength > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const profile = getCurrentProfile();
+                const now = Date.now();
+                profile.pokestops[pokestop.name] = now;
+                
+                const profiles = JSON.parse(localStorage.getItem('profiles')) || {};
+                const currentProfileName = localStorage.getItem('currentProfile') || 'Default';
                 profiles[currentProfileName] = profile;
                 localStorage.setItem('profiles', JSON.stringify(profiles));
-                
-                showCooldownNotification('PokéStop', pokestopData.pokestop.name);
-                console.log('✅ Cooldown activado para PokéStop:', pokestopData.pokestop.name);
                 
                 // Actualizar visualmente
                 if (typeof displayPokestops === 'function') {
-                    setTimeout(() => displayPokestops(), 100);
+                    displayPokestops();
                 }
-                cooldownActivated = true;
+                
+                showCooldownNotification('PokéStop', pokestop.name);
+                console.log('✅ Cooldown activado para PokéStop:', pokestop.name);
             }
-        }
-        
-        // ========== BOSS ==========
-        else if (target.classList.contains('boss-icon')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
             
-            // Buscar el boss en el array bossIcons
-            const bossData = bossIcons.find(item => item.icon === target);
-            if (bossData && bossData.name) {
-                profile.bosses[bossData.name] = now;
+            lastTap = currentTime;
+        }, { passive: false });
+    }
+    
+    // ========== BOSS DOBLE TAP ==========
+    function handleBossDoubleTap(icon, bossName) {
+        let lastTap = 0;
+        
+        icon.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const profile = getCurrentProfile();
+                const now = Date.now();
+                profile.bosses[bossName] = now;
+                
+                const profiles = JSON.parse(localStorage.getItem('profiles')) || {};
+                const currentProfileName = localStorage.getItem('currentProfile') || 'Default';
                 profiles[currentProfileName] = profile;
                 localStorage.setItem('profiles', JSON.stringify(profiles));
-                
-                showCooldownNotification('Boss', bossData.name);
-                console.log('✅ Cooldown activado para Boss:', bossData.name);
                 
                 // Actualizar visualmente
                 if (typeof displayBosses === 'function') {
-                    setTimeout(() => displayBosses(), 100);
+                    displayBosses();
                 }
-                cooldownActivated = true;
+                
+                showCooldownNotification('Boss', bossName);
+                console.log('✅ Cooldown activado para Boss:', bossName);
             }
-        }
-        
-        // ========== EXCAVATION ==========
-        else if (target.classList.contains('excavition-icon')) {
-            e.preventDefault();
-            e.stopPropagation();
-            e.stopImmediatePropagation();
             
-            // Buscar la excavation en el array ex_excavitionIcons
-            const excavationData = ex_excavitionIcons.find(item => item.icon === target);
-            if (excavationData && excavationData.excavition) {
-                profile.excavitions[excavationData.excavition.name] = now;
+            lastTap = currentTime;
+        }, { passive: false });
+    }
+    
+    // ========== EXCAVATION DOBLE TAP ==========
+    function handleExcavationDoubleTap(icon, excavation) {
+        let lastTap = 0;
+        
+        icon.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            
+            if (tapLength < 300 && tapLength > 0) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const profile = getCurrentProfile();
+                const now = Date.now();
+                profile.excavitions[excavation.name] = now;
+                
+                const profiles = JSON.parse(localStorage.getItem('profiles')) || {};
+                const currentProfileName = localStorage.getItem('currentProfile') || 'Default';
                 profiles[currentProfileName] = profile;
                 localStorage.setItem('profiles', JSON.stringify(profiles));
                 
-                showCooldownNotification('Excavation', excavationData.excavition.name);
-                console.log('✅ Cooldown activado para Excavation:', excavationData.excavition.name);
-                
                 // Actualizar visualmente
                 if (typeof ex_displayExcavitions === 'function') {
-                    setTimeout(() => ex_displayExcavitions(), 100);
+                    ex_displayExcavitions();
                 }
-                cooldownActivated = true;
+                
+                showCooldownNotification('Excavation', excavation.name);
+                console.log('✅ Cooldown activado para Excavation:', excavation.name);
             }
-        }
-        
-        if (cooldownActivated) {
-            return false;
-        }
-        
-    }, true); // ← TRUE = capture phase (se ejecuta ANTES que otros eventos)
+            
+            lastTap = currentTime;
+        }, { passive: false });
+    }
     
-    console.log('✅ Sistema de tap para cooldown inicializado (SOLO MÓVIL - CAPTURE PHASE)');
+    // ========== APLICAR A ICONOS EXISTENTES ==========
+    function attachDoubleTapToIcons() {
+        // PokéStops
+        if (typeof pokestopIcons !== 'undefined' && Array.isArray(pokestopIcons)) {
+            pokestopIcons.forEach(iconData => {
+                if (iconData.icon && iconData.pokestop) {
+                    handlePokestopDoubleTap(iconData.icon, iconData.pokestop);
+                }
+            });
+            console.log(`📱 Doble tap aplicado a ${pokestopIcons.length} PokéStops`);
+        }
+        
+        // Bosses
+        if (typeof bossIcons !== 'undefined' && Array.isArray(bossIcons)) {
+            bossIcons.forEach(iconData => {
+                if (iconData.icon && iconData.name) {
+                    handleBossDoubleTap(iconData.icon, iconData.name);
+                }
+            });
+            console.log(`📱 Doble tap aplicado a ${bossIcons.length} Bosses`);
+        }
+        
+        // Excavations
+        if (typeof ex_excavitionIcons !== 'undefined' && Array.isArray(ex_excavitionIcons)) {
+            ex_excavitionIcons.forEach(iconData => {
+                if (iconData.icon && iconData.excavition) {
+                    handleExcavationDoubleTap(iconData.icon, iconData.excavition);
+                }
+            });
+            console.log(`📱 Doble tap aplicado a ${ex_excavitionIcons.length} Excavations`);
+        }
+    }
+    
+    // Ejecutar después de que se carguen los datos
+    setTimeout(attachDoubleTapToIcons, 2000);
+    
+    // Re-aplicar cuando cambie el perfil o se actualicen los iconos
+    window.addEventListener('profileChanged', function() {
+        setTimeout(attachDoubleTapToIcons, 500);
+    });
+    
+    // Observer para detectar cuando se crean nuevos iconos
+    const mapObserver = new MutationObserver((mutations) => {
+        let shouldReattach = false;
+        
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1 && 
+                    (node.classList?.contains('pokestop-icon') || 
+                     node.classList?.contains('boss-icon') || 
+                     node.classList?.contains('excavition-icon'))) {
+                    shouldReattach = true;
+                }
+            });
+        });
+        
+        if (shouldReattach) {
+            setTimeout(attachDoubleTapToIcons, 100);
+        }
+    });
+    
+    const mapContainer = document.getElementById('map');
+    if (mapContainer) {
+        mapObserver.observe(mapContainer, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    console.log('✅ Sistema de doble tap para cooldown inicializado');
 }
 
-// Inicializar después de que se carguen los datos
+// Inicializar doble tap después del sidebar
 setTimeout(function() {
     if (window.innerWidth <= 768) {
         initMobileCooldownTap();
     }
-}, 2000);
+}, 1000);
 
-// Reinicializar cuando cambie el perfil
-window.addEventListener('profileChanged', function() {
-    if (window.innerWidth <= 768) {
-        setTimeout(initMobileCooldownTap, 500);
+// Reinicializar al cambiar tamaño de ventana
+window.addEventListener('resize', function() {
+    if (window.innerWidth <= 768 && typeof initMobileCooldownTap === 'function') {
+        initMobileCooldownTap();
     }
 });
-
-

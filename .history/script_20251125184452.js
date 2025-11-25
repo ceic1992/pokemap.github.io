@@ -1359,11 +1359,6 @@ function displayBossIcons() {
                     if (isBossAvailable(bossName)) {
                         markBossAsKilled(bossName);
                         
-                        // ✅ MOSTRAR TOOLTIP MÓVIL DESPUÉS DE ACTIVAR COOLDOWN
-                        setTimeout(() => {
-                            showBossTooltipMobile(bossName);
-                        }, 150);
-                        
                         // Feedback visual
                         this.style.transform = 'translate(-50%, -50%) scale(0.9)';
                         setTimeout(() => {
@@ -1375,7 +1370,6 @@ function displayBossIcons() {
                     }
                 }
             });
-
         })();
         
         map.appendChild(icon);
@@ -3520,11 +3514,14 @@ function showBossTooltipMobile(bossName) {
         mobileTooltip.style.borderRadius = '10px';
         mobileTooltip.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
         mobileTooltip.style.zIndex = '10000';
-        mobileTooltip.style.minWidth = '250px';
         mobileTooltip.style.maxWidth = '90vw';
+        mobileTooltip.style.maxHeight = '80vh';
+        mobileTooltip.style.overflowY = 'auto';
         mobileTooltip.style.display = 'none';
         document.body.appendChild(mobileTooltip);
     }
+
+    const wikiUrl = `https://wiki.pokemonrevolution.net/index.php?title=${encodeURIComponent(bossName)}_(boss)`;
 
     // Función para actualizar el contenido del tooltip
     function updateMobileTooltipContent() {
@@ -3553,11 +3550,16 @@ function showBossTooltipMobile(bossName) {
         }
 
         let tooltipContent = `
-            <div style="text-align: center; position: relative;">
+            <div style="text-align: center; margin-bottom: 15px;">
+                <h3 style="margin: 0 0 10px 0;">
+                    <a href="${wikiUrl}" target="_blank" style="color: #fff; text-decoration: underline;">
+                        ${bossName}
+                    </a>
+                </h3>
                 <button id="close-boss-mobile-tooltip" style="
                     position: absolute;
-                    top: -10px;
-                    right: -10px;
+                    top: 10px;
+                    right: 10px;
                     background: #ff5722;
                     color: white;
                     border: none;
@@ -3569,43 +3571,54 @@ function showBossTooltipMobile(bossName) {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
                 ">&times;</button>
-                
-                <h3 style="margin: 0 0 15px 0; font-size: 20px; color: white;">
-                    ${bossName}
-                </h3>
+            </div>
         `;
 
         if (showCooldown) {
             tooltipContent += `
-                <div style="
-                    background-color: #ff5722; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    text-align: center;
-                ">
-                    <div style="font-size: 14px; margin-bottom: 5px;">
-                        ${window.i18n.t("boss.cooldown") || "Cooldown"}:
-                    </div>
-                    <div style="font-size: 22px; font-weight: bold; font-family: monospace;">
-                        ${cooldownRemainingTime}
-                    </div>
+                <div style="background-color: #ff5722; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                    <strong>${window.i18n.t("boss.cooldown") || "Cooldown"}:</strong><br>
+                    <span style="font-size: 18px; font-weight: bold;">${cooldownRemainingTime}</span>
                 </div>
             `;
         } else {
             tooltipContent += `
-                <div style="
-                    background-color: #4CAF50; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    text-align: center;
-                    font-size: 18px;
-                    font-weight: bold;
-                ">
-                    ${window.i18n.t("boss.available") || "Available"}
+                <div style="background-color: #4CAF50; padding: 10px; border-radius: 5px; margin-bottom: 15px; text-align: center;">
+                    <strong>${window.i18n.t("boss.available") || "Available"}</strong>
                 </div>
             `;
+        }
+
+        tooltipContent += `
+            <div style="text-align: left;">
+                <p><strong>${window.i18n.t("boss.region")}:</strong> ${bossData.region || 'N/A'}</p>
+                <p><strong>${window.i18n.t("boss.location")}:</strong> ${bossData.location || 'N/A'}</p>
+                <p><strong>${window.i18n.t("boss.cooldown")}:</strong> ${bossData.cooldown || 'N/A'}</p>
+        `;
+        
+        if (bossData.basic_requirements) {
+            tooltipContent += `
+                <div style="margin-top: 15px;">
+                    <h4 style="margin-bottom: 10px;">${window.i18n.t("boss.basicRequirements")}:</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+            `;
+            Object.values(bossData.basic_requirements).forEach(req => {
+                tooltipContent += `<li>${req}</li>`;
+            });
+            tooltipContent += '</ul></div>';
+        }
+
+        if (bossData.PokeTeam && Object.keys(bossData.PokeTeam).length > 0) {
+            tooltipContent += `
+                <div style="margin-top: 15px;">
+                    <h4 style="margin-bottom: 10px;">${window.i18n.t("boss.pokeTeam")}:</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+            `;
+            Object.values(bossData.PokeTeam).forEach(team => {
+                tooltipContent += `<li>${team}</li>`;
+            });
+            tooltipContent += '</ul></div>';
         }
         
         tooltipContent += '</div>';
@@ -3661,4 +3674,3 @@ function showBossTooltipMobile(bossName) {
         document.addEventListener('touchstart', handleOutsideClick);
     }, 100);
 }
-

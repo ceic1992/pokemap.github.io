@@ -113,7 +113,7 @@ function markPokestopAsClicked(pokestopName) {
         return false;
     }
     
-    console.log(`✅ Marking pokestop as clicked: ${pokestopName}`);
+    console.log(`Marking pokestop as clicked: ${pokestopName}`);
     
     const now = Date.now();
     const availableAt = now + (POKESTOP_COOLDOWN_HOURS * 60 * 60 * 1000);
@@ -146,7 +146,7 @@ function markPokestopAsClicked(pokestopName) {
 }
 
 function formatPokestopTimeRemaining(milliseconds) {
-    if (milliseconds <= 0) return window.i18n?.t("pokestop.available") || "Available";
+    if (milliseconds <= 0) return window.i18n.t("pokestop.available");
     
     const seconds = Math.floor((milliseconds / 1000) % 60).toString().padStart(2, '0');
     const minutes = Math.floor((milliseconds / (1000 * 60)) % 60).toString().padStart(2, '0');
@@ -178,10 +178,6 @@ function updatePokestopTimers() {
             
             if (timeRemaining <= 0) {
                 icon.style.opacity = '1.0';
-                const img = icon.querySelector('img');
-                if (img) {
-                    img.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))';
-                }
                 
                 delete clickedPokestopsData[pokestopName];
                 try {
@@ -191,17 +187,9 @@ function updatePokestopTimers() {
                 }
             } else {
                 icon.style.opacity = '0.5';
-                const img = icon.querySelector('img');
-                if (img) {
-                    img.style.filter = 'grayscale(50%) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))';
-                }
             }
         } else {
             icon.style.opacity = '1.0';
-            const img = icon.querySelector('img');
-            if (img) {
-                img.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))';
-            }
         }
     });
 }
@@ -215,6 +203,7 @@ function updateActiveTooltip() {
         return;
     }
     
+    // ✅ ACTUALIZAR CONTENIDO DEL TOOLTIP EN TIEMPO REAL
     if (!isPokestopAvailable(activeTooltipPokestopName)) {
         const savedData = localStorage.getItem('clickedPokestops');
         if (savedData) {
@@ -225,11 +214,13 @@ function updateActiveTooltip() {
                 const timeRemaining = availableAt - now;
                 
                 if (timeRemaining <= 0) {
+                    // ✅ Si el cooldown terminó, ocultar tooltip
                     tooltip.style.display = 'none';
                     activeTooltipPokestopName = null;
                     return;
                 }
                 
+                // ✅ ACTUALIZAR SOLO EL TIMER, NO TODO EL HTML
                 const cooldownElement = tooltip.querySelector('.tooltip-cooldown');
                 if (cooldownElement) {
                     const newTime = formatPokestopTimeRemaining(timeRemaining);
@@ -240,14 +231,17 @@ function updateActiveTooltip() {
             }
         }
     } else {
+        // ✅ Si ya no está en cooldown, ocultar tooltip
         tooltip.style.display = 'none';
         activeTooltipPokestopName = null;
     }
 }
 
+
 function createPokestopTooltip(pokestopName, x, y, isRightClick = false) {
     const tooltip = createPokestopTooltipElement();
     
+    // ✅ SIEMPRE ACTUALIZAR EL TOOLTIP ACTIVO
     activeTooltipPokestopName = pokestopName;
     
     let isOnCooldown = !isPokestopAvailable(pokestopName);
@@ -264,9 +258,11 @@ function createPokestopTooltip(pokestopName, x, y, isRightClick = false) {
     const tooltipClass = isOnCooldown ? 'pokestop-tooltip-cooldown' : 'pokestop-tooltip-available';
     tooltip.className = `pokestop-tooltip ${tooltipClass}`;
     
+    // Detectar si es móvil
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
                      || window.innerWidth <= 768;
     
+    // Posicionar según dispositivo
     if (isMobile) {
         tooltip.style.position = 'fixed';
         tooltip.style.left = '50%';
@@ -305,23 +301,26 @@ function createPokestopTooltip(pokestopName, x, y, isRightClick = false) {
         }
     }
     
-    let tooltipHTML = `<div class="tooltip-header">${window.i18n?.t("pokestop.prefix") || "PokéStop"}: ${pokestopName}</div>`;
+    let tooltipHTML = `<div class="tooltip-header">${window.i18n.t("pokestop.prefix")}: ${pokestopName}</div>`;
     
     if (showCooldown) {
         tooltipHTML += `
             <div class="tooltip-info">
-                ${window.i18n?.t("pokestop.cooldown") || "Cooldown"}: <span class="tooltip-cooldown">${cooldownRemainingTime}</span>
+                ${window.i18n.t("pokestop.cooldown")}: <span class="tooltip-cooldown">${cooldownRemainingTime}</span>
             </div>
         `;
     }
     
     tooltip.innerHTML = tooltipHTML;
+    
 }
+
+
 
 function initPokestopTimers() {
     updatePokestopTimers();
     setInterval(updatePokestopTimers, 1000);
-    initTooltipUpdater();
+    initTooltipUpdater(); // Initialize tooltip updater
 }
 
 function initTooltipUpdater() {
@@ -363,7 +362,7 @@ function createImagePreviewContainer() {
 
     const backButton = document.createElement('div');
     backButton.className = 'pokestop-preview-back';
-    backButton.innerHTML = '&#10094;';
+    backButton.innerHTML = '&#10094;'; // Left arrow
     backButton.style.display = 'none';
 
     backButton.addEventListener('click', function() {
@@ -374,7 +373,7 @@ function createImagePreviewContainer() {
 
     const nextButton = document.createElement('div');
     nextButton.className = 'pokestop-preview-next';
-    nextButton.innerHTML = '&#10095;';
+    nextButton.innerHTML = '&#10095;'; // Right arrow
     nextButton.style.display = 'none';
 
     nextButton.addEventListener('click', function() {
@@ -648,7 +647,7 @@ function ps_handleImageWheel(e) {
     currentImageZoom *= zoomFactor;
 
     const minZoom = 1;
-    const maxZoom = 5;
+    const maxZoom = 5; // Increase maximum zoom
     
     if (currentImageZoom < minZoom) currentImageZoom = minZoom;
     if (currentImageZoom > maxZoom) currentImageZoom = maxZoom;
@@ -778,10 +777,8 @@ function handleClickOutside(event) {
 function showImagePreview(mapName) {
     try {
         if (isPreviewOpen || previewClickCooldown) {
-            return;
+            return; // Prevent multiple openings
         }
-
-        console.log(`🖼️ Opening pokestop preview for: ${mapName}`);
 
         isPreviewOpen = true;
         previewClickCooldown = true;
@@ -887,7 +884,7 @@ function showImagePreview(mapName) {
 function showLocationImages(location) {
     try {
         if (isPreviewOpen || previewClickCooldown) {
-            return;
+            return; // Prevent multiple openings
         }
 
         isPreviewOpen = true;
@@ -1052,7 +1049,7 @@ function createPokestopIcon(mapName, mapPos) {
     icon.className = 'pokestop-icon';
     icon.style.left = `${x}px`;
     icon.style.top = `${y}px`;
-    icon.style.display = 'none';
+    icon.style.display = 'none'; // Hide PokéStop icons by default
     icon.dataset.mapName = mapName;
     icon.dataset.id = `pokestop-${mapName.replace(/\s+/g, '-').toLowerCase()}`;
 
@@ -1062,9 +1059,7 @@ function createPokestopIcon(mapName, mapPos) {
     const img = document.createElement('img');
     img.src = 'resources/pokestop.webp';
     img.alt = `PokéStop at ${mapName}`;
-    img.style.filter = isAvailable ? 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))' : 'grayscale(50%) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3))';
 
-    // ===== EVENTOS DESKTOP (PC) =====
     icon.addEventListener('mouseover', function(e) {
         createPokestopTooltip(mapName, e.clientX, e.clientY);
     });
@@ -1081,7 +1076,7 @@ function createPokestopIcon(mapName, mapPos) {
         const tooltip = document.getElementById('pokestop-tooltip');
         if (tooltip) {
             tooltip.style.display = 'none';
-            activeTooltipPokestopName = null;
+            activeTooltipPokestopName = null; // Reset active tooltip
         }
     });
 
@@ -1095,6 +1090,45 @@ function createPokestopIcon(mapName, mapPos) {
         }
     });
 
+    // Touch support para móviles
+    let ps_touchStartTime = 0;
+    let ps_touchMoved = false;
+
+    icon.addEventListener('touchstart', function(e) {
+        ps_touchStartTime = Date.now();
+        ps_touchMoved = false;
+    });
+
+    icon.addEventListener('touchmove', function(e) {
+        ps_touchMoved = true;
+    });
+
+    icon.addEventListener('touchend', function(e) {
+        e.preventDefault();
+        const touchDuration = Date.now() - ps_touchStartTime;
+        
+        // Si fue un tap corto y sin movimiento
+        if (touchDuration < 300 && !ps_touchMoved) {
+            // ✅ En móvil, usar coordenadas fijas (se ignoran en la función)
+            createPokestopTooltip(mapName, 0, 0, true);
+            
+            // Feedback visual
+            this.style.transform = 'translate(-50%, -50%) scale(0.9)';
+            setTimeout(() => {
+                this.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 100);
+        }
+        // Si fue un tap largo (> 300ms), abrir imagen
+        else if (touchDuration >= 300 && !ps_touchMoved) {
+            if (window.isRouteCreatorActive) {
+                window.selectLocationForRoute(mapName, "pokestop", [x, y]);
+            } else {
+                showImagePreview(mapName);
+            }
+        }
+    });
+
+
     icon.addEventListener('contextmenu', function(e) {
         e.preventDefault();
         e.stopPropagation();
@@ -1102,93 +1136,15 @@ function createPokestopIcon(mapName, mapPos) {
         createPokestopTooltip(mapName, e.clientX, e.clientY, true);
     });
 
-    // ===== EVENTOS MOBILE (TOUCH) =====
-    (function() {
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
-        let touchMoved = false;
-        let longPressTimer = null;
-
-        icon.addEventListener('touchstart', function(e) {
-            console.log(`📱 Touch start on pokestop: ${mapName}`);
-            touchStartTime = Date.now();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            touchMoved = false;
-            
-            longPressTimer = setTimeout(() => {
-                if (!touchMoved && !window.isRouteCreatorActive) {
-                    console.log(`⏱️ Long press detected on: ${mapName}`);
-                    showImagePreview(mapName);
-                    longPressTimer = null;
-                }
-            }, 500);
-            
-        }, { passive: true });
-
-        icon.addEventListener('touchmove', function(e) {
-            const moveX = Math.abs(e.touches[0].clientX - touchStartX);
-            const moveY = Math.abs(e.touches[0].clientY - touchStartY);
-            
-            if (moveX > 10 || moveY > 10) {
-                touchMoved = true;
-                if (longPressTimer) {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                }
-            }
-        }, { passive: true });
-
-        icon.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            
-            const touchDuration = Date.now() - touchStartTime;
-            
-            console.log(`📱 Touch end on: ${mapName}, duration: ${touchDuration}ms, moved: ${touchMoved}`);
-            
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-            
-            if (touchDuration < 500 && !touchMoved) {
-                console.log(`👆 Short tap detected on: ${mapName}`);
-                
-                if (window.isRouteCreatorActive) {
-                    console.log(`🗺️ Adding to route: ${mapName}`);
-                    window.selectLocationForRoute(mapName, "pokestop", [x, y]);
-                } else {
-                    if (isPokestopAvailable(mapName)) {
-                        console.log(`✅ Pokestop available, marking as clicked: ${mapName}`);
-                        const success = markPokestopAsClicked(mapName);
-                        
-                        if (success) {
-                            icon.style.transform = 'translate(-50%, -50%) scale(0.9)';
-                            setTimeout(() => {
-                                icon.style.transform = 'translate(-50%, -50%) scale(1)';
-                            }, 100);
-                            
-                            setTimeout(() => {
-                                showPokestopTooltipMobile(mapName);
-                            }, 150);
-                        }
-                    } else {
-                        console.log(`⏳ Pokestop on cooldown, showing tooltip: ${mapName}`);
-                        showPokestopTooltipMobile(mapName);
-                    }
-                }
-            }
-        });
-
-        icon.addEventListener('touchcancel', function() {
-            console.log(`❌ Touch cancelled on: ${mapName}`);
-            if (longPressTimer) {
-                clearTimeout(longPressTimer);
-                longPressTimer = null;
-            }
-        });
-    })();
+    icon.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        
+        if (window.isRouteCreatorActive) {
+            window.selectLocationForRoute(mapName, "pokestop", [x, y]);
+        } else {
+            showImagePreview(mapName);
+        }
+    });
 
     icon.appendChild(img);
     map.appendChild(icon);
@@ -1196,132 +1152,6 @@ function createPokestopIcon(mapName, mapPos) {
     pokestopIcons.push(icon);
 
     return icon;
-}
-
-// ===== FUNCIÓN TOOLTIP MÓVIL =====
-function showPokestopTooltipMobile(pokestopName) {
-    console.log(`📱 Showing mobile tooltip for pokestop: ${pokestopName}`);
-    
-    let mobileTooltip = document.getElementById('pokestop-mobile-tooltip');
-    
-    if (!mobileTooltip) {
-        mobileTooltip = document.createElement('div');
-        mobileTooltip.id = 'pokestop-mobile-tooltip';
-        mobileTooltip.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(40, 44, 52, 0.98);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 10000;
-            min-width: 250px;
-            max-width: 90vw;
-            display: none;
-            text-align: center;
-        `;
-        document.body.appendChild(mobileTooltip);
-    }
-
-    function updateContent() {
-        const isOnCooldown = !isPokestopAvailable(pokestopName);
-        let cooldownTime = '';
-        
-        if (isOnCooldown) {
-            try {
-                const savedData = localStorage.getItem('clickedPokestops');
-                if (savedData) {
-                    const data = JSON.parse(savedData);
-                    if (data[pokestopName]) {
-                        const remaining = data[pokestopName].availableAt - Date.now();
-                        if (remaining > 0) {
-                            cooldownTime = formatPokestopTimeRemaining(remaining);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Error getting cooldown:", error);
-            }
-        }
-
-        mobileTooltip.innerHTML = `
-            <div style="position: relative;">
-                <button id="close-ps-mobile-tooltip" style="
-                    position: absolute;
-                    top: -10px;
-                    right: -10px;
-                    background: #ff5722;
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 30px;
-                    height: 30px;
-                    font-size: 20px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                ">&times;</button>
-                
-                <h3 style="margin: 0 0 15px 0; font-size: 20px;">${pokestopName}</h3>
-                
-                ${isOnCooldown ? `
-                    <div style="background-color: #ff5722; padding: 15px; border-radius: 8px;">
-                        <div style="font-size: 14px; margin-bottom: 5px;">
-                            ${window.i18n?.t("pokestop.cooldown") || "Cooldown"}:
-                        </div>
-                        <div style="font-size: 22px; font-weight: bold; font-family: monospace;">
-                            ${cooldownTime}
-                        </div>
-                    </div>
-                ` : `
-                    <div style="background-color: #4CAF50; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold;">
-                        ${window.i18n?.t("pokestop.available") || "Available"}
-                    </div>
-                `}
-            </div>
-        `;
-        
-        const closeBtn = document.getElementById('close-ps-mobile-tooltip');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                mobileTooltip.style.display = 'none';
-                if (window.ps_tooltipInterval) {
-                    clearInterval(window.ps_tooltipInterval);
-                    window.ps_tooltipInterval = null;
-                }
-            });
-        }
-    }
-
-    updateContent();
-    mobileTooltip.style.display = 'block';
-
-    if (window.ps_tooltipInterval) {
-        clearInterval(window.ps_tooltipInterval);
-    }
-    window.ps_tooltipInterval = setInterval(updateContent, 1000);
-
-    setTimeout(() => {
-        const closeHandler = (e) => {
-            if (!mobileTooltip.contains(e.target)) {
-                mobileTooltip.style.display = 'none';
-                if (window.ps_tooltipInterval) {
-                    clearInterval(window.ps_tooltipInterval);
-                    window.ps_tooltipInterval = null;
-                }
-                document.removeEventListener('click', closeHandler);
-                document.removeEventListener('touchstart', closeHandler);
-            }
-        };
-        document.addEventListener('click', closeHandler);
-        document.addEventListener('touchstart', closeHandler);
-    }, 100);
 }
 
 function clearPokestopIcons() {
@@ -1464,18 +1294,6 @@ function initPokestopToggle() {
     }
 }
 
-function blockPokestopPreviewInRouteCreatorMode() {
-    const originalShowImagePreview = window.showImagePreview;
-    window.showImagePreview = function(mapName) {
-        if (window.isRouteCreatorActive) {
-            console.log(`🚫 Blocking preview for ${mapName} in route creator mode`);
-            return false;
-        }
-        
-        return originalShowImagePreview(mapName);
-    };
-}
-
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM loaded, initializing PokéStop button");
     setTimeout(initPokestopToggle, 1000);
@@ -1504,7 +1322,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         console.log("Updated click handlers for area polygons");
-    }, 2000);
+    }, 2000); // Give some time for map and areas to load
 });
 
 window.addEventListener('load', function() {
@@ -1557,7 +1375,7 @@ window.addEventListener('load', function() {
         console.log("Initializing PokéStop icons");
         displayAllPokestopIcons();
         hookIntoMapRefresh();
-        initPokestopTimers();
+        initPokestopTimers(); // Initialize pokestop timers
         
         initPokestopToggle();
         blockPokestopPreviewInRouteCreatorMode();
@@ -1578,3 +1396,18 @@ window.addEventListener('load', function() {
     
     console.log("Location preview functionality initialized");
 });
+function blockPokestopPreviewInRouteCreatorMode() {
+    const pokestopIcons = document.querySelectorAll('.pokestop-icon');
+    pokestopIcons.forEach(icon => {
+        const originalShowImagePreview = window.showImagePreview;
+        window.showImagePreview = function(mapName) {
+            if (window.isRouteCreatorActive) {
+                console.log(`Blokuję otwieranie podglądu dla ${mapName} w trybie tworzenia trasy`);
+                return false;
+            }
+            
+            return originalShowImagePreview(mapName);
+        };
+    });
+}
+

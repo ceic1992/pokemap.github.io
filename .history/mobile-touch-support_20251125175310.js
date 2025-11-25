@@ -377,5 +377,3 @@ window.addEventListener('profileChanged', function() {
         setTimeout(initMobileCooldownTap, 500);
     }
 });
-
-

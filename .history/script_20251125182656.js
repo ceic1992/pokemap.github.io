@@ -1201,191 +1201,94 @@ function hideBossHoverTooltip() {
     }
 }
 
-function clearBossIcons() {
-    bossIcons.forEach(icon => {
-        if (icon && icon.parentNode) {
-            icon.parentNode.removeChild(icon);
-        }
-    });
-    bossIcons = [];
-}
-
-function updateBossIconOpacity(icon, bossName) {
-    const isAvailable = isBossAvailable(bossName);
-    const img = icon.querySelector('img');
-    
-    if (img) {
-        img.style.opacity = isAvailable ? '1.0' : '0.5';
-        img.style.filter = isAvailable ? 'none' : 'grayscale(50%)';
-    }
-    
-    icon.style.cursor = isAvailable ? 'pointer' : 'not-allowed';
-}
-
-function hideBossTooltip() {
-    if (bossTooltip) {
-        if (bossTooltip.updateInterval) {
-            clearInterval(bossTooltip.updateInterval);
-            bossTooltip.updateInterval = null;
-        }
-        bossTooltip.style.display = 'none';
-        bossTooltip.dataset.currentBoss = null;
-    }
-}
-
 function displayBossIcons() {
-    bossIcons.forEach(icon => icon.remove());
-    bossIcons = [];
-
-    if (!bosses || Object.keys(bosses).length === 0) {
-        console.log("No bosses data available");
-        return;
-    }
-
-    Object.keys(bosses).forEach(bossName => {
-        const bossData = bosses[bossName];
+    clearBossIcons();
+    
+    Object.entries(bosses).forEach(([bossName, bossData]) => {
+        const location = locations.find(loc => loc.tooltip === bossData.location);
         
-        // ✅ FILTRO DE REGIÓN
-        if (currentRegionFilter !== "all" && bossData.region !== currentRegionFilter) {
-            return;
-        }
-        
-        let mapX, mapY;
-        
-        // ✅ BUSCAR POSICIÓN: Primero en map_pos, luego en location
-        if (bossData.map_pos && bossData.map_pos.length >= 2) {
-            [mapX, mapY] = bossData.map_pos;
-        } else if (bossData.location) {
-            const location = locations.find(loc => 
-                loc.tooltip === bossData.location || 
-                loc.map === bossData.location
-            );
+        if (location && location.map_pos) {
+            const icon = document.createElement('div');
+            icon.className = 'boss-icon';
+            icon.style.left = `${location.map_pos[0]}px`;
+            icon.style.top = `${location.map_pos[1]}px`;
+            icon.dataset.bossName = bossName;
             
-            if (location && location.map_pos && location.map_pos.length >= 2) {
-                [mapX, mapY] = location.map_pos;
-            } else {
-                console.warn(`Boss ${bossName} - location "${bossData.location}" not found in locations array`);
-                return;
-            }
-        } else {
-            console.warn(`Boss ${bossName} has no valid map_pos or location`);
-            return;
-        }
-        
-        const icon = document.createElement('div');
-        icon.className = 'boss-icon';
-        icon.dataset.bossName = bossName;
-        
-        const img = document.createElement('img');
-        const encodedBossName = encodeURIComponent(bossName);
-        img.src = `resources/bosses/${encodedBossName}.webp`;
-        img.alt = bossName;
-        img.style.width = '32px';
-        img.style.height = '32px';
-        img.style.display = 'block';
-        
-        img.onerror = function() {
-            console.warn(`Boss image not found: ${bossName}.webp, using default`);
-            this.src = 'resources/bosses/default-boss.webp';
-        };
-        
-        icon.appendChild(img);
-        
-        const isAvailable = isBossAvailable(bossName);
-        if (!isAvailable) {
-            img.style.opacity = '0.5';
-            img.style.filter = 'grayscale(50%)';
-        } else {
-            img.style.opacity = '1.0';
-            img.style.filter = 'none';
-        }
-        
-        icon.style.position = 'absolute';
-        icon.style.left = `${mapX}px`;
-        icon.style.top = `${mapY}px`;
-        icon.style.transform = 'translate(-50%, -50%)';
-        icon.style.cursor = 'pointer';
-        icon.style.zIndex = '20';
-        icon.style.pointerEvents = 'auto';
-        
-        // ===== EVENTOS MOUSE (PC) =====
-        icon.addEventListener('mouseenter', function(e) {
-            showBossHoverTooltip(bossName, e.clientX, e.clientY);
-        });
-
-        icon.addEventListener('mousemove', function(e) {
-            updateBossTooltipPosition(e.clientX, e.clientY);
-        });
-
-        icon.addEventListener('mouseleave', function() {
-            hideBossHoverTooltip();
-        });
-
-        icon.addEventListener('click', function(e) {
-            e.stopPropagation();
-            hideBossHoverTooltip();
-            showBossTooltip(bossName, e.clientX, e.clientY);
-        });
-        
-        // ===== EVENTOS TOUCH (MÓVIL) =====
-        (function() {
-            let touchStartTime = 0;
-            let touchMoved = false;
-            let touchStartX = 0;
-            let touchStartY = 0;
+            const img = document.createElement('img');
+            img.src = 'resources/boss-icon.webp';
+            img.alt = bossName;
+            icon.appendChild(img);
+            
+            // ===== EVENTOS MOUSE (PC) =====
+            icon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (!isBossAvailable(bossName)) {
+                    showBossInfo(bossName);
+                }
+            });
+            
+            icon.addEventListener('mouseover', function(e) {
+                showBossTooltip(bossName, e.clientX, e.clientY);
+            });
+            
+            icon.addEventListener('mousemove', function(e) {
+                updateBossTooltipPosition(e.clientX, e.clientY);
+            });
+            
+            icon.addEventListener('mouseout', function() {
+                hideBossTooltip();
+            });
+            
+            // ===== EVENTOS TOUCH (MÓVIL) - NUEVO =====
+            let boss_touchStartTime = 0;
+            let boss_touchMoved = false;
+            let boss_touchStartX = 0;
+            let boss_touchStartY = 0;
 
             icon.addEventListener('touchstart', function(e) {
-                touchStartTime = Date.now();
-                touchMoved = false;
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
+                boss_touchStartTime = Date.now();
+                boss_touchMoved = false;
+                boss_touchStartX = e.touches[0].clientX;
+                boss_touchStartY = e.touches[0].clientY;
             }, { passive: true });
 
             icon.addEventListener('touchmove', function(e) {
-                const moveX = Math.abs(e.touches[0].clientX - touchStartX);
-                const moveY = Math.abs(e.touches[0].clientY - touchStartY);
+                const moveX = Math.abs(e.touches[0].clientX - boss_touchStartX);
+                const moveY = Math.abs(e.touches[0].clientY - boss_touchStartY);
                 
                 if (moveX > 10 || moveY > 10) {
-                    touchMoved = true;
+                    boss_touchMoved = true;
                 }
             }, { passive: true });
 
             icon.addEventListener('touchend', function(e) {
                 e.preventDefault();
-                const touchDuration = Date.now() - touchStartTime;
+                const touchDuration = Date.now() - boss_touchStartTime;
                 
-                if (touchDuration < 300 && !touchMoved) {
-                    // ✅ TAP CORTO = ACTIVAR COOLDOWN
+                if (touchDuration < 300 && !boss_touchMoved) {
+                    // Tap corto = activar cooldown
                     if (isBossAvailable(bossName)) {
                         markBossAsKilled(bossName);
-                        
-                        // ✅ MOSTRAR TOOLTIP MÓVIL DESPUÉS DE ACTIVAR COOLDOWN
-                        setTimeout(() => {
-                            showBossTooltipMobile(bossName);
-                        }, 150);
-                        
-                        // Feedback visual
-                        this.style.transform = 'translate(-50%, -50%) scale(0.9)';
-                        setTimeout(() => {
-                            this.style.transform = 'translate(-50%, -50%) scale(1)';
-                        }, 100);
-                    } else {
-                        // Si está en cooldown, mostrar tooltip
-                        showBossTooltipMobile(bossName);
                     }
+                    
+                    // Mostrar tooltip en móvil
+                    showBossTooltipMobile(bossName);
+                    
+                    // Feedback visual
+                    this.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                    setTimeout(() => {
+                        this.style.transform = 'translate(-50%, -50%) scale(1)';
+                    }, 100);
                 }
             });
-
-        })();
-        
-        map.appendChild(icon);
-        bossIcons.push(icon);
+            
+            map.appendChild(icon);
+            bossIcons.push(icon);
+            
+            updateBossIconOpacity(icon, bossName);
+        }
     });
-
-    console.log(`✅ Displayed ${bossIcons.length} boss icons on map (filter: ${currentRegionFilter})`);
 }
-
-
 
 
 
@@ -3498,167 +3401,4 @@ document.addEventListener('touchstart', function(e) {
         }
     }
 }, { passive: true });
-
-
-function showBossTooltipMobile(bossName) {
-    const bossData = bosses[bossName];
-    if (!bossData) return;
-
-    // Crear o reutilizar el tooltip móvil para bosses
-    let mobileTooltip = document.getElementById('boss-mobile-tooltip');
-    
-    if (!mobileTooltip) {
-        mobileTooltip = document.createElement('div');
-        mobileTooltip.id = 'boss-mobile-tooltip';
-        mobileTooltip.style.position = 'fixed';
-        mobileTooltip.style.top = '50%';
-        mobileTooltip.style.left = '50%';
-        mobileTooltip.style.transform = 'translate(-50%, -50%)';
-        mobileTooltip.style.backgroundColor = 'rgba(40, 44, 52, 0.98)';
-        mobileTooltip.style.color = 'white';
-        mobileTooltip.style.padding = '20px';
-        mobileTooltip.style.borderRadius = '10px';
-        mobileTooltip.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
-        mobileTooltip.style.zIndex = '10000';
-        mobileTooltip.style.minWidth = '250px';
-        mobileTooltip.style.maxWidth = '90vw';
-        mobileTooltip.style.display = 'none';
-        document.body.appendChild(mobileTooltip);
-    }
-
-    // Función para actualizar el contenido del tooltip
-    function updateMobileTooltipContent() {
-        let isOnCooldown = !isBossAvailable(bossName);
-        let cooldownRemainingTime = '';
-        let showCooldown = false;
-
-        if (isOnCooldown) {
-            try {
-                const savedData = localStorage.getItem('killedBosses');
-                if (savedData) {
-                    const killedBosses = JSON.parse(savedData);
-                    if (killedBosses[bossName]) {
-                        const availableAt = killedBosses[bossName].availableAt;
-                        const now = Date.now();
-                        const timeRemaining = availableAt - now;
-                        if (timeRemaining > 0) {
-                            cooldownRemainingTime = formatTimeRemaining(timeRemaining);
-                            showCooldown = true;
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Error getting boss cooldown:", error);
-            }
-        }
-
-        let tooltipContent = `
-            <div style="text-align: center; position: relative;">
-                <button id="close-boss-mobile-tooltip" style="
-                    position: absolute;
-                    top: -10px;
-                    right: -10px;
-                    background: #ff5722;
-                    color: white;
-                    border: none;
-                    border-radius: 50%;
-                    width: 30px;
-                    height: 30px;
-                    font-size: 20px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-                ">&times;</button>
-                
-                <h3 style="margin: 0 0 15px 0; font-size: 20px; color: white;">
-                    ${bossName}
-                </h3>
-        `;
-
-        if (showCooldown) {
-            tooltipContent += `
-                <div style="
-                    background-color: #ff5722; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    text-align: center;
-                ">
-                    <div style="font-size: 14px; margin-bottom: 5px;">
-                        ${window.i18n.t("boss.cooldown") || "Cooldown"}:
-                    </div>
-                    <div style="font-size: 22px; font-weight: bold; font-family: monospace;">
-                        ${cooldownRemainingTime}
-                    </div>
-                </div>
-            `;
-        } else {
-            tooltipContent += `
-                <div style="
-                    background-color: #4CAF50; 
-                    padding: 15px; 
-                    border-radius: 8px; 
-                    text-align: center;
-                    font-size: 18px;
-                    font-weight: bold;
-                ">
-                    ${window.i18n.t("boss.available") || "Available"}
-                </div>
-            `;
-        }
-        
-        tooltipContent += '</div>';
-        
-        mobileTooltip.innerHTML = tooltipContent;
-
-        // Reattach close button event
-        const closeButton = document.getElementById('close-boss-mobile-tooltip');
-        if (closeButton) {
-            closeButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (mobileTooltip.updateInterval) {
-                    clearInterval(mobileTooltip.updateInterval);
-                    mobileTooltip.updateInterval = null;
-                }
-                mobileTooltip.style.display = 'none';
-                mobileTooltip.dataset.currentBoss = null;
-            });
-        }
-    }
-
-    // Actualizar contenido inmediatamente
-    updateMobileTooltipContent();
-
-    // Mostrar el tooltip
-    mobileTooltip.style.display = 'block';
-    mobileTooltip.dataset.currentBoss = bossName;
-
-    // Limpiar intervalo anterior si existe
-    if (mobileTooltip.updateInterval) {
-        clearInterval(mobileTooltip.updateInterval);
-    }
-
-    // Crear nuevo intervalo para actualización continua (cada segundo)
-    mobileTooltip.updateInterval = setInterval(updateMobileTooltipContent, 1000);
-
-    // Cerrar al tocar fuera del tooltip
-    const handleOutsideClick = function(e) {
-        if (!mobileTooltip.contains(e.target)) {
-            if (mobileTooltip.updateInterval) {
-                clearInterval(mobileTooltip.updateInterval);
-                mobileTooltip.updateInterval = null;
-            }
-            mobileTooltip.style.display = 'none';
-            mobileTooltip.dataset.currentBoss = null;
-            document.removeEventListener('click', handleOutsideClick);
-            document.removeEventListener('touchstart', handleOutsideClick);
-        }
-    };
-
-    setTimeout(() => {
-        document.addEventListener('click', handleOutsideClick);
-        document.addEventListener('touchstart', handleOutsideClick);
-    }, 100);
-}
 

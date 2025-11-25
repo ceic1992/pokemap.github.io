@@ -2843,13 +2843,13 @@ body {
 /* Header del tooltip */
 .tooltip-header {
     font-weight: bold;
-    font-size: 12px;
+    font-size: 10px;
     margin-bottom: 6px;
 }
 
 /* Info del tooltip */
 .tooltip-info {
-    font-size: 12px;
+    font-size: 13px;
     margin-top: 4px;
 }
 
