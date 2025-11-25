@@ -180,28 +180,3 @@ window.addEventListener('load', function() {
         initMobileSidebar();
     }
 });
-
-
-// Ocultar cualquier botón de navegación que aparezca dinámicamente
-const observer = new MutationObserver((mutations) => {
-    if (window.innerWidth <= 768) {
-        // Buscar y ocultar botones de navegación
-        const navButtons = document.querySelectorAll('button[aria-label*="back"], button[aria-label*="return"], .back-button, .arrow-button');
-        navButtons.forEach(btn => {
-            if (btn.id !== 'sidebar-toggle-mobile' && 
-                btn.id !== 'return-to-main-btn' &&
-                !btn.classList.contains('control-btn')) {
-                btn.style.display = 'none';
-            }
-        });
-    }
-});
-
-// Observar cambios en el sidebar
-const sidebar = document.getElementById('sidebar');
-if (sidebar) {
-    observer.observe(sidebar, {
-        childList: true,
-        subtree: true
-    });
-}

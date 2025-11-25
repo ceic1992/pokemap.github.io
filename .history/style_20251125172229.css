@@ -2295,6 +2295,14 @@ body {
     transform: rotate(-45deg) translate(7px, -7px);
 }
 
+/* Mostrar solo en móvil */
+@media (min-width: 769px) {
+    .sidebar-toggle-mobile {
+        display: none !important;
+    }
+}
+
+
 /* ========== RESPONSIVE MOBILE OPTIMIZADO ========== */
 @media (max-width: 768px) {
     body {
@@ -2302,9 +2310,9 @@ body {
         overflow: hidden;
     }
     
-    /* Mostrar botón hamburguesa SOLO en móvil */
+    /* Mostrar botón hamburguesa */
     .sidebar-toggle-mobile {
-        display: flex !important;
+        display: flex;
     }
     
     /* Sidebar colapsable - OCUPA TODA LA PANTALLA */
@@ -2321,8 +2329,7 @@ body {
         overflow-x: hidden;
         transition: left 0.3s ease;
         box-shadow: none;
-        padding: 70px 20px 20px 20px;
-        border-right: none;
+        padding: 70px 20px 20px 20px; /* Espacio arriba para el botón X */
     }
     
     .sidebar.open {
@@ -2339,6 +2346,17 @@ body {
         background-position: right 10px center;
         background-size: 20px;
         padding-right: 40px;
+    }
+    
+    /* Ajustar contenedores del sidebar */
+    .profile-container,
+    .filter-container,
+    .route-creator-button-container,
+    .search-container,
+    .repel-filter-container,
+    .toggle-buttons-container,
+    .poketime-container {
+        margin-bottom: 20px;
     }
     
     /* Overlay oscuro cuando sidebar está abierto */
@@ -2360,26 +2378,19 @@ body {
         opacity: 1;
     }
     
-    /* Mapa SIEMPRE visible y ocupa toda la pantalla */
+    /* Mapa ocupa toda la pantalla */
     #map-container {
-        position: fixed;
-        top: 0;
-        left: 0;
         margin-left: 0;
-        width: 100vw;
+        width: 100%;
         height: 100vh;
-        z-index: 1;
     }
     
     /* Controles del mapa */
     .map-controls {
-        position: fixed;
         bottom: 20px;
         right: 20px;
-        display: flex;
-        flex-direction: column;
         gap: 8px;
-        z-index: 100;
+        flex-direction: column;
     }
     
     .control-btn {
@@ -2387,7 +2398,6 @@ body {
         font-size: 18px;
         min-height: 50px;
         min-width: 50px;
-        border-radius: 10px;
     }
     
     /* Botones de toggle en grid 2 columnas */
@@ -2395,7 +2405,6 @@ body {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 10px;
-        margin-bottom: 20px;
     }
     
     .pokestop-toggle-btn,
@@ -2404,10 +2413,6 @@ body {
         padding: 15px;
         min-height: 60px;
         font-size: 14px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 8px;
     }
     
     .pokestop-toggle-btn img,
@@ -2421,7 +2426,6 @@ body {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 8px;
-        margin-bottom: 20px;
     }
     
     .profile-actions-container .control-btn {
@@ -2431,29 +2435,12 @@ body {
         min-height: 50px;
     }
     
-    /* Selectores y búsqueda más grandes */
+    /* Selectores más grandes */
     .filter-select,
     .search-input {
         font-size: 16px;
         padding: 15px;
         min-height: 50px;
-        width: 100%;
-    }
-    
-    /* Contenedores con espaciado */
-    .profile-container,
-    .filter-container,
-    .route-creator-button-container,
-    .search-container,
-    .repel-filter-container,
-    .poketime-container {
-        margin-bottom: 20px;
-    }
-    
-    /* Títulos más pequeños */
-    .sidebar h3 {
-        font-size: 16px;
-        margin-bottom: 10px;
     }
     
     /* PokeTime compacto */
@@ -2487,7 +2474,6 @@ body {
     
     .poketime-routes {
         max-height: 300px;
-        overflow-y: auto;
     }
     
     .poketime-routes .routes-grid {
@@ -2499,7 +2485,7 @@ body {
         padding: 12px;
     }
     
-    /* Iconos del mapa más grandes */
+    /* Iconos del mapa más grandes y táctiles */
     .location-icon,
     .boss-icon,
     .pokestop-icon,
@@ -2544,18 +2530,12 @@ body {
         max-width: 100%;
         height: 100vh;
         padding: 70px 20px 20px 20px;
-        z-index: 10000;
     }
     
-    /* Resultados de búsqueda */
-    .search-results {
-        max-height: 300px;
-        overflow-y: auto;
-    }
-    
-    .search-result-item {
-        padding: 12px;
-        font-size: 14px;
+    /* Ocultar elementos innecesarios en móvil */
+    .sidebar h3 {
+        font-size: 16px;
+        margin-bottom: 10px;
     }
 }
 
@@ -2584,17 +2564,6 @@ body {
     }
 }
 
-/* Ocultar botón hamburguesa en desktop */
-@media (min-width: 769px) {
-    .sidebar-toggle-mobile {
-        display: none !important;
-    }
-    
-    .sidebar-overlay {
-        display: none !important;
-    }
-}
-
 /* Prevenir zoom en inputs en iOS */
 @supports (-webkit-touch-callout: none) {
     input,
@@ -2618,161 +2587,5 @@ body {
     .pokestop-icon,
     .excavition-icon {
         -webkit-tap-highlight-color: rgba(102, 126, 234, 0.3);
-    }
-}
-
-
-/* ========== OCULTAR BOTÓN HIDE SIDEBAR EN MÓVIL ========== */
-@media (max-width: 768px) {
-    .sidebar-toggle.hide-sidebar-btn,
-    .hide-sidebar-btn,
-    button.sidebar-toggle,
-    #hide-sidebar-btn {
-        display: none !important;
-    }
-}
-
-
-/* ========== OCULTAR ELEMENTOS NO DESEADOS EN MÓVIL ========== */
-@media (max-width: 768px) {
-    /* Ocultar cualquier botón de navegación/flecha en sidebar */
-    .sidebar > button:first-of-type:not(#new-profile-btn):not(#rename-profile-btn):not(#delete-profile-btn):not(#route-creator-btn),
-    .sidebar .back-button,
-    .sidebar .arrow-button,
-    .sidebar .navigation-button,
-    .sidebar button[aria-label*="back"],
-    .sidebar button[aria-label*="return"],
-    .sidebar button[onclick*="history"],
-    .sidebar .MuiIconButton-root,
-    .sidebar .nav-back-btn {
-        display: none !important;
-    }
-    
-    /* Si hay un botón flotante de navegación */
-    button[style*="position: fixed"][style*="z-index"] {
-        display: none !important;
-    }
-}
-
-/* ========== POKETIME ROUTES RESPONSIVE ========== */
-@media (max-width: 768px) {
-    /* Contenedor de rutas sin scrollbar */
-    .poketime-routes {
-        max-height: none !important;
-        overflow-y: visible !important;
-        overflow-x: hidden;
-    }
-    
-    /* Grid 2 columnas en móvil */
-    .poketime-routes .routes-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 10px;
-        width: 100%;
-    }
-    
-    /* Cada ruta más compacta */
-    .poketime-routes .route-item {
-        padding: 10px;
-        font-size: 13px;
-        border-radius: 8px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Título de la ruta */
-    .poketime-routes .route-item h4,
-    .poketime-routes .route-item .route-title {
-        font-size: 14px;
-        margin-bottom: 5px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* Subtítulo (región) */
-    .poketime-routes .route-item .route-subtitle,
-    .poketime-routes .route-item p {
-        font-size: 11px;
-        opacity: 0.7;
-        margin-bottom: 8px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* Stats (HP-LAND, DEF-SURF, etc) */
-    .poketime-routes .route-item .route-stats,
-    .poketime-routes .route-item > div:last-child {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .poketime-routes .route-item .stat-item,
-    .poketime-routes .route-item span {
-        font-size: 12px;
-        padding: 5px 8px;
-        background: rgba(102, 126, 234, 0.2);
-        border-radius: 5px;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    /* Indicador de periodo (Morning/Day/Night) */
-    .poketime-routes .route-item .period-indicator {
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        font-size: 16px;
-    }
-    
-    /* Título de sección EV Train */
-    .poketime-routes h4:first-child,
-    .poketime-routes > div:first-child {
-        grid-column: 1 / -1;
-        text-align: center;
-        font-size: 16px;
-        margin-bottom: 10px;
-        padding: 10px;
-        background: rgba(102, 126, 234, 0.3);
-        border-radius: 8px;
-    }
-}
-
-/* Pantallas muy pequeñas - 1 columna */
-@media (max-width: 380px) {
-    .poketime-routes .routes-grid {
-        grid-template-columns: 1fr !important;
-    }
-}
-
-/* Ajustar contenedor principal de PokeTime */
-@media (max-width: 768px) {
-    .poketime-container {
-        margin-bottom: 20px;
-        max-height: none;
-    }
-    
-    /* Hacer el contenedor colapsable si hay muchas rutas */
-    .poketime-container.collapsed .poketime-routes {
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    /* Botón para expandir/colapsar (opcional) */
-    .poketime-toggle-btn {
-        display: block;
-        width: 100%;
-        padding: 10px;
-        margin-top: 10px;
-        background: rgba(102, 126, 234, 0.3);
-        border: none;
-        border-radius: 8px;
-        color: white;
-        font-size: 14px;
-        cursor: pointer;
     }
 }
