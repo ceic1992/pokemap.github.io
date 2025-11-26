@@ -781,10 +781,12 @@ body {
 }
 
 .weekly-kills-counter {
-    box-sizing: border-box;
-    padding: 10px;
-    width: calc(100% - 20px);
-    margin: 10px auto;
+    margin-top: 20px;
+    background-color: #333;
+    padding: 12px 15px;
+    border-radius: 5px;
+    text-align: center;
+    border-left: 3px solid #4CAF50;
 }
 
 .weekly-kills-counter.limit-reached {
@@ -2226,7 +2228,7 @@ body {
         height: 20px;
         font-size: 12px;
     }
-    
+
     .boss-image {
         width: 30px;
         height: 30px;
@@ -2248,51 +2250,35 @@ body {
 .sidebar-toggle-mobile {
     display: none;
     position: fixed;
-    top: 10px;
-    left: 10px;
-    width: 40px;
-    height: 40px;
-    background-color: #555;
-    border-radius: 5px;
+    top: 15px;
+    left: 15px;
+    z-index: 10001;
+    width: 50px;
+    height: 50px;
+    background: #667eea;
     border: none;
-    z-index: 1001;
+    border-radius: 10px;
     cursor: pointer;
     flex-direction: column;
-    justify-content: space-around;
-    padding: 10px;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
 }
 
 .sidebar-toggle-mobile span {
     display: block;
-    width: 100%;
+    width: 25px;
     height: 3px;
-    background-color: white;
-    border-radius: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
 }
 
 .sidebar-toggle-mobile:active {
     transform: scale(0.95);
-}
-
-.sidebar::-webkit-scrollbar {
-    width: 8px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-    background: #333;
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-    background-color: #666;
-    border-radius: 4px;
-}
-
-
-/* Asegurar que los elementos contenedores se ajusten correctamente */
-.route-creator-header, .route-selector, .profile-selector-container, 
-.profile-actions-container, .filter-container, .search-container {
-    width: 100%;
-    box-sizing: border-box;
 }
 
 /* Animación del botón cuando sidebar está abierto (X) */
@@ -2892,144 +2878,191 @@ body {
     }
 }
 
+
 /* Mejoras específicas para la sección de EV Train en móviles */
 @media screen and (max-width: 768px) {
-    /* Ajustes generales para la sección de EV Train */
-    .ev-train-section {
-        padding: 10px 5px;
+    /* Contenedor de PokeTime y EV Train */
+    .poketime-container {
+        margin-bottom: 20px;
+        padding: 10px;
     }
     
-    /* Contenedor principal de rutas */
-    .routes-container {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+    /* Título de la sección */
+    .poketime-container h3 {
+        font-size: 16px;
         margin-bottom: 10px;
+        text-align: center;
     }
     
-    /* Tarjetas de rutas */
-    .route-card {
+    /* Reloj de PokeTime */
+    .poketime-compact {
+        padding: 8px;
+        margin-bottom: 15px;
+    }
+    
+    /* Tamaño del reloj */
+    .poketime-left .game-time {
+        font-size: 24px;
+    }
+    
+    /* Rutas de EV Train - IMPORTANTE */
+    .poketime-routes {
+        max-height: none !important;
+        overflow-y: visible !important;
+        padding-bottom: 20px;
+    }
+    
+    /* Grid de rutas - CAMBIADO A 1 COLUMNA */
+    .poketime-routes .routes-grid {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 8px;
+    }
+    
+    /* Cada tarjeta de ruta más compacta */
+    .poketime-routes .route-item {
         padding: 8px;
         margin-bottom: 5px;
-        width: 100%;
-        box-sizing: border-box;
     }
     
-    /* Título de ruta */
-    .route-title {
-        font-size: 14px;
+    /* Nombre de la ruta */
+    .poketime-routes .route-name,
+    .poketime-routes .route-title {
+        font-size: 13px;
         margin-bottom: 2px;
     }
     
-    /* Subtítulo de ruta (ciudad) */
-    .route-subtitle {
-        font-size: 12px;
-        margin-bottom: 4px;
+    /* Ubicación de la ruta */
+    .poketime-routes .route-location,
+    .poketime-routes .route-subtitle {
+        font-size: 10px;
+        margin-bottom: 5px;
     }
     
-    /* Botones de entrenamiento */
-    .training-button {
-        padding: 6px;
-        font-size: 12px;
-        margin-bottom: 3px;
-        width: 100%;
-    }
-    
-    /* Contenedor de botones de entrenamiento */
-    .training-buttons {
+    /* Stats de entrenamiento (SPD-LAND, ATK-SURF, etc.) */
+    .poketime-routes .route-stats {
         display: flex;
         flex-direction: column;
         gap: 4px;
     }
     
-    /* Botón principal de EV Train */
-    .ev-train-button {
-        padding: 10px;
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-    
-    /* Ajustes para el reloj de Poke Time */
-    .time-display {
-        font-size: 28px;
+    .poketime-routes .stat,
+    .poketime-routes .stat-land,
+    .poketime-routes .stat-surf {
+        font-size: 12px;
         padding: 5px;
+        text-align: center;
     }
     
-    /* Ajustar el layout de la cuadrícula de rutas para móviles */
-    .routes-grid {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 8px;
+    /* Asegurarse de que el botón de EV Train sea visible */
+    .ev-train-button {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+    
+    /* Ajustar el sidebar para que no oculte el contenido */
+    .sidebar {
+        padding-bottom: 120px;
     }
 }
 
 /* Para pantallas muy pequeñas */
 @media screen and (max-width: 480px) {
-    /* Hacer que las tarjetas de rutas sean aún más compactas */
-    .route-card {
-        padding: 5px;
+    /* Hacer todo aún más compacto */
+    .poketime-routes .route-item {
+        padding: 6px;
     }
     
-    /* Reducir aún más el tamaño de la fuente */
-    .route-title {
-        font-size: 13px;
+    .poketime-routes .route-name,
+    .poketime-routes .route-title {
+        font-size: 12px;
     }
     
-    .route-subtitle {
-        font-size: 10px;
+    .poketime-routes .route-location,
+    .poketime-routes .route-subtitle {
+        font-size: 9px;
     }
     
-    /* Hacer que los botones de tipo de entrenamiento sean más pequeños */
-    .training-button {
-        padding: 5px;
+    .poketime-routes .stat,
+    .poketime-routes .stat-land,
+    .poketime-routes .stat-surf {
         font-size: 11px;
+        padding: 4px;
     }
     
-    /* Ajustar el espaciado vertical */
-    .section-container {
-        margin-bottom: 8px;
+    /* Ajustar el reloj */
+    .poketime-left .game-time {
+        font-size: 22px;
     }
     
-    /* Asegurar que el botón EV Train sea visible y utilizable */
-    .ev-train-button {
-        margin-bottom: 8px;
-        padding: 8px;
-    }
-    
-    /* Hacer que las tarjetas de rutas sean más compactas */
-    .routes-grid {
-        gap: 5px;
+    .poketime-left .period {
+        font-size: 12px;
+        padding: 3px 8px;
     }
 }
 
-/* Estilos específicos para la visualización de rutas en EV Train */
-.ev-train-container {
-    width: 100%;
-    box-sizing: border-box;
-    overflow-y: auto;
-    max-height: 70vh; /* Altura máxima para permitir scroll */
+/* Arreglar el botón hamburguesa para que siempre sea visible */
+.sidebar-toggle-mobile {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 10001;
+    width: 50px;
+    height: 50px;
+    background: #667eea;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
 }
 
-/* Asegurar que las rutas se muestren correctamente en pantallas pequeñas */
-@media screen and (max-width: 360px) {
-    /* Layout de una sola columna para pantallas muy pequeñas */
-    .routes-grid {
-        display: flex;
-        flex-direction: column;
+.sidebar-toggle-mobile span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Asegurarse de que el botón hamburguesa siempre sea visible */
+@media screen and (max-width: 768px) {
+    .sidebar-toggle-mobile {
+        display: flex !important;
     }
     
-    /* Hacer que los botones de entrenamiento sean más legibles */
-    .training-button {
-        white-space: normal; /* Permitir saltos de línea */
-        height: auto;
-        min-height: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    /* Cuando el sidebar está abierto, cambiar la apariencia del botón */
+    .sidebar-toggle-mobile.active span:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
     }
     
-    /* Reducir el padding en toda la sección */
-    .ev-train-section {
-        padding: 5px 3px;
+    .sidebar-toggle-mobile.active span:nth-child(2) {
+        opacity: 0;
+    }
+    
+    .sidebar-toggle-mobile.active span:nth-child(3) {
+        transform: rotate(-45deg) translate(5px, -5px);
+    }
+    
+    /* Asegurar que el botón permanezca visible cuando el sidebar está abierto */
+    body.sidebar-open .sidebar-toggle-mobile {
+        left: 15px !important;
+        display: flex !important;
+    }
+    
+    /* Sidebar abierto */
+    .sidebar.open {
+        left: 0;
+        padding-top: 70px;
     }
 }
