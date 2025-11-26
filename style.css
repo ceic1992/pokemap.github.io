@@ -657,11 +657,14 @@ body {
 .sidebar {
     width: 300px;
     background-color: #444;
-    padding: 4px;
-    display: block;
+    padding: 10px;
+    display: flex;
     flex-direction: column;
     height: 100vh;
     box-sizing: border-box;
+    overflow-y: auto; /* Permitir scroll vertical */
+    position: relative;
+    transition: width 0.3s ease;
 }
 
 /* Top section containing search and filter */
@@ -778,12 +781,10 @@ body {
 }
 
 .weekly-kills-counter {
-    margin-top: 20px;
-    background-color: #333;
-    padding: 12px 15px;
-    border-radius: 5px;
-    text-align: center;
-    border-left: 3px solid #4CAF50;
+    box-sizing: border-box;
+    padding: 10px;
+    width: calc(100% - 20px);
+    margin: 10px auto;
 }
 
 .weekly-kills-counter.limit-reached {
@@ -2147,101 +2148,97 @@ body {
 }
 
 /* ========== RESPONSIVE MOBILE - SIMPLE ========== */
-@media (max-width: 768px) {
-    body {
-        flex-direction: column;
-    }
-    
+@media screen and (max-width: 768px) {
     .sidebar {
-        width: 100%;
-        height: auto;
-        max-height: 40vh;
-        overflow-y: auto;
-        border-right: none;
-        border-bottom: 2px solid #555;
+        width: 100%; /* En móviles, el sidebar ocupa todo el ancho cuando está abierto */
+        padding: 8px;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
     }
     
-    #map-container {
+    /* Ajustar el contenedor del mapa cuando el sidebar está abierto en móvil */
+    body.sidebar-open #map-container {
         margin-left: 0;
-        width: 100%;
-        height: 60vh;
     }
     
-    .map-controls {
-        bottom: 20px;
-        right: 20px;
-        gap: 5px;
-    }
-    
+    /* Mejorar el tamaño de los botones para facilitar el toque en móvil */
     .control-btn {
-        padding: 10px 15px;
+        padding: 12px 15px;
         font-size: 16px;
-        min-height: 44px;
+        margin-bottom: 5px;
     }
     
-    /* Botones de toggle */
-    .toggle-buttons-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
+    /* Ajustar el tamaño de los elementos de la lista para evitar cortes */
+    .selected-boss, .boss-list-item {
+        padding: 8px 10px;
+        margin-bottom: 8px;
     }
     
-    .pokestop-toggle-btn,
-    .boss-toggle-btn {
-        width: 100%;
-        padding: 12px;
+    /* Hacer que los selectores sean más fáciles de tocar */
+    .filter-select, .search-input {
+        height: 40px;
+        font-size: 16px;
     }
     
-    /* Profile actions */
-    .profile-actions-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 8px;
+    /* Ajustar espaciado en contenedores */
+    .search-container, .filter-container, .profile-container {
+        margin-bottom: 15px;
     }
     
-    /* PokeTime */
-    .poketime-compact {
-        flex-direction: column;
+    /* Asegurar que los contenedores de scroll no sean demasiado altos */
+    #selected-bosses-container, .route-boss-list-container {
+        max-height: 40vh;
     }
     
-    .poketime-left,
-    .poketime-right {
-        width: 100%;
-    }
-    
-    .poketime-routes .routes-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    /* Iconos del mapa más grandes */
-    .location-icon,
-    .boss-icon,
-    .pokestop-icon,
-    .excavition-icon {
-        width: 40px !important;
-        height: 40px !important;
-        cursor: pointer;
-    }
-    
-    /* Tooltip */
-    .tooltip {
-        font-size: 13px;
-        max-width: 85vw;
-        padding: 12px;
+    /* Ajustar el contador de kills semanales para que no se corte */
+    .weekly-kills-counter {
+        position: relative !important;
+        bottom: auto !important;
+        width: calc(100% - 16px) !important;
+        max-width: none !important;
+        left: auto !important;
+        margin: 10px auto !important;
     }
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
+    /* Reducir aún más el padding */
     .sidebar {
-        max-height: 35vh;
+        padding: 5px;
     }
     
-    #map-container {
-        height: 65vh;
+    /* Hacer los botones más compactos pero manteniendo buen tamaño táctil */
+    .profile-actions-container .control-btn {
+        padding: 10px 5px;
+        font-size: 14px;
     }
     
-    .poketime-left .game-time {
-        font-size: 24px;
+    /* Ajustar las badges de poketeam para que se vean bien */
+    .poketeam-badges {
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en vez de 3 */
+    }
+    
+    /* Hacer que los elementos de lista sean más compactos */
+    .boss-number {
+        min-width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+    
+    .boss-image {
+        width: 30px;
+        height: 30px;
+    }
+    
+    /* Ajustar el tamaño de fuente para textos */
+    .boss-name {
+        font-size: 14px;
+    }
+    
+    .boss-location {
+        font-size: 11px;
     }
 }
 
@@ -2251,35 +2248,51 @@ body {
 .sidebar-toggle-mobile {
     display: none;
     position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 10001;
-    width: 50px;
-    height: 50px;
-    background: #667eea;
+    top: 10px;
+    left: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #555;
+    border-radius: 5px;
     border: none;
-    border-radius: 10px;
+    z-index: 1001;
     cursor: pointer;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 6px;
-    padding: 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s ease;
+    justify-content: space-around;
+    padding: 10px;
 }
 
 .sidebar-toggle-mobile span {
     display: block;
-    width: 25px;
+    width: 100%;
     height: 3px;
-    background: white;
-    border-radius: 2px;
-    transition: all 0.3s ease;
+    background-color: white;
+    border-radius: 3px;
 }
 
 .sidebar-toggle-mobile:active {
     transform: scale(0.95);
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #333;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 4px;
+}
+
+
+/* Asegurar que los elementos contenedores se ajusten correctamente */
+.route-creator-header, .route-selector, .profile-selector-container, 
+.profile-actions-container, .filter-container, .search-container {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Animación del botón cuando sidebar está abierto (X) */
