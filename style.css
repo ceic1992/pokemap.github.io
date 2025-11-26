@@ -2891,3 +2891,145 @@ body {
         animation: tooltipFadeIn 0.3s ease;
     }
 }
+
+/* Mejoras específicas para la sección de EV Train en móviles */
+@media screen and (max-width: 768px) {
+    /* Ajustes generales para la sección de EV Train */
+    .ev-train-section {
+        padding: 10px 5px;
+    }
+    
+    /* Contenedor principal de rutas */
+    .routes-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    /* Tarjetas de rutas */
+    .route-card {
+        padding: 8px;
+        margin-bottom: 5px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Título de ruta */
+    .route-title {
+        font-size: 14px;
+        margin-bottom: 2px;
+    }
+    
+    /* Subtítulo de ruta (ciudad) */
+    .route-subtitle {
+        font-size: 12px;
+        margin-bottom: 4px;
+    }
+    
+    /* Botones de entrenamiento */
+    .training-button {
+        padding: 6px;
+        font-size: 12px;
+        margin-bottom: 3px;
+        width: 100%;
+    }
+    
+    /* Contenedor de botones de entrenamiento */
+    .training-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    /* Botón principal de EV Train */
+    .ev-train-button {
+        padding: 10px;
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    /* Ajustes para el reloj de Poke Time */
+    .time-display {
+        font-size: 28px;
+        padding: 5px;
+    }
+    
+    /* Ajustar el layout de la cuadrícula de rutas para móviles */
+    .routes-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+}
+
+/* Para pantallas muy pequeñas */
+@media screen and (max-width: 480px) {
+    /* Hacer que las tarjetas de rutas sean aún más compactas */
+    .route-card {
+        padding: 5px;
+    }
+    
+    /* Reducir aún más el tamaño de la fuente */
+    .route-title {
+        font-size: 13px;
+    }
+    
+    .route-subtitle {
+        font-size: 10px;
+    }
+    
+    /* Hacer que los botones de tipo de entrenamiento sean más pequeños */
+    .training-button {
+        padding: 5px;
+        font-size: 11px;
+    }
+    
+    /* Ajustar el espaciado vertical */
+    .section-container {
+        margin-bottom: 8px;
+    }
+    
+    /* Asegurar que el botón EV Train sea visible y utilizable */
+    .ev-train-button {
+        margin-bottom: 8px;
+        padding: 8px;
+    }
+    
+    /* Hacer que las tarjetas de rutas sean más compactas */
+    .routes-grid {
+        gap: 5px;
+    }
+}
+
+/* Estilos específicos para la visualización de rutas en EV Train */
+.ev-train-container {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    max-height: 70vh; /* Altura máxima para permitir scroll */
+}
+
+/* Asegurar que las rutas se muestren correctamente en pantallas pequeñas */
+@media screen and (max-width: 360px) {
+    /* Layout de una sola columna para pantallas muy pequeñas */
+    .routes-grid {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Hacer que los botones de entrenamiento sean más legibles */
+    .training-button {
+        white-space: normal; /* Permitir saltos de línea */
+        height: auto;
+        min-height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Reducir el padding en toda la sección */
+    .ev-train-section {
+        padding: 5px 3px;
+    }
+}
