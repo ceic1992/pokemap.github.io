@@ -839,7 +839,7 @@ window.addEventListener('load', function() {
     }
 });
 
-// ========== EXPORTAR/IMPORTAR PERFILES (VERSIÓN COMPLETA) ==========
+// ========== EXPORTAR/IMPORTAR PERFILES ==========
 
 function exportProfile(profileId) {
     if (!profiles[profileId]) {
@@ -847,43 +847,10 @@ function exportProfile(profileId) {
         return;
     }
 
-    // Recopilar TODOS los datos relacionados con el perfil
     const profileData = {
-        version: "1.1", // Incrementar versión
+        version: "1.0",
         exportDate: new Date().toISOString(),
-        profile: profiles[profileId],
-        // Datos adicionales del localStorage
-        additionalData: {
-            // Cooldowns de bosses
-            bossKillTimestamps: JSON.parse(localStorage.getItem('bossKillTimestamps') || '{}'),
-            weeklyKillData: JSON.parse(localStorage.getItem('weeklyKillData') || '{}'),
-            
-            // Cooldowns de pokestops
-            clickedPokestops: JSON.parse(localStorage.getItem('clickedPokestops') || '{}'),
-            
-            // Cooldowns de excavaciones
-            clickedExcavitions: JSON.parse(localStorage.getItem('ex_clickedExcavitions') || '{}'),
-            
-            // Ubicaciones completadas
-            completedLocations: Array.from(JSON.parse(localStorage.getItem('completedLocations') || '[]')),
-            
-            // Rutas
-            routes: JSON.parse(localStorage.getItem('routes') || '{}'),
-            
-            // Áreas dibujadas
-            areas: JSON.parse(localStorage.getItem('areas') || '[]'),
-            
-            // Configuración de visibilidad
-            bossIconsVisible: localStorage.getItem('bossIconsVisible'),
-            pokestopIconsVisible: localStorage.getItem('pokestopIconsVisible'),
-            excavitionIconsVisible: localStorage.getItem('excavitionIconsVisible'),
-            
-            // Filtros activos
-            activeFilters: {
-                pokemon: localStorage.getItem('activePokemonFilters'),
-                location: localStorage.getItem('activeLocationFilter')
-            }
-        }
+        profile: profiles[profileId]
     };
 
     const dataStr = JSON.stringify(profileData, null, 2);
@@ -900,37 +867,15 @@ function exportProfile(profileId) {
     
     URL.revokeObjectURL(url);
     
-    console.log(`✅ Profile "${profiles[profileId].name}" exported successfully with all data`);
-    
-    // Mostrar notificación
-    if (window.i18n) {
-        alert(window.i18n.t('profile.exportSuccess', { name: profiles[profileId].name }));
-    }
+    console.log(`✅ Profile "${profiles[profileId].name}" exported successfully`);
 }
 
 function exportAllProfiles() {
     const exportData = {
-        version: "1.1",
+        version: "1.0",
         exportDate: new Date().toISOString(),
         profiles: profiles,
-        currentProfile: currentProfile,
-        // Datos globales del localStorage
-        globalData: {
-            bossKillTimestamps: JSON.parse(localStorage.getItem('bossKillTimestamps') || '{}'),
-            weeklyKillData: JSON.parse(localStorage.getItem('weeklyKillData') || '{}'),
-            clickedPokestops: JSON.parse(localStorage.getItem('clickedPokestops') || '{}'),
-            clickedExcavitions: JSON.parse(localStorage.getItem('ex_clickedExcavitions') || '{}'),
-            completedLocations: Array.from(JSON.parse(localStorage.getItem('completedLocations') || '[]')),
-            routes: JSON.parse(localStorage.getItem('routes') || '{}'),
-            areas: JSON.parse(localStorage.getItem('areas') || '[]'),
-            bossIconsVisible: localStorage.getItem('bossIconsVisible'),
-            pokestopIconsVisible: localStorage.getItem('pokestopIconsVisible'),
-            excavitionIconsVisible: localStorage.getItem('excavitionIconsVisible'),
-            activeFilters: {
-                pokemon: localStorage.getItem('activePokemonFilters'),
-                location: localStorage.getItem('activeLocationFilter')
-            }
-        }
+        currentProfile: currentProfile
     };
 
     const dataStr = JSON.stringify(exportData, null, 2);
@@ -939,7 +884,7 @@ function exportAllProfiles() {
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `all_profiles_backup_${Date.now()}.json`;
+    link.download = `all_profiles_${Date.now()}.json`;
     
     document.body.appendChild(link);
     link.click();
@@ -947,12 +892,7 @@ function exportAllProfiles() {
     
     URL.revokeObjectURL(url);
     
-    console.log(`✅ All profiles exported successfully with complete data`);
-    
-    // Mostrar notificación
-    if (window.i18n) {
-        alert(window.i18n.t('profile.exportAllSuccess', { count: Object.keys(profiles).length }));
-    }
+    console.log(`✅ All profiles exported successfully`);
 }
 
 function importProfile(fileInput) {
@@ -992,22 +932,15 @@ function importProfile(fileInput) {
                     id: newProfileId
                 };
                 
-                // Importar datos adicionales si existen
-                if (importData.additionalData) {
-                    importAdditionalData(importData.additionalData);
-                }
-                
                 saveProfiles();
                 updateProfileUI();
                 
-                // Recargar la página para aplicar todos los cambios
-                if (confirm(window.i18n ? 
-                    window.i18n.t('profile.reloadAfterImport') : 
-                    'Profile imported! Reload page to apply all changes?')) {
-                    location.reload();
-                }
+                alert(window.i18n ? 
+                    window.i18n.t('profile.importSuccess', { name: finalName }) : 
+                    `Profile "${finalName}" imported successfully!`
+                );
                 
-                console.log(`✅ Profile "${finalName}" imported successfully with all data`);
+                console.log(`✅ Profile "${finalName}" imported successfully`);
             }
             // Importar múltiples perfiles
             else if (importData.profiles) {
@@ -1017,6 +950,7 @@ function importProfile(fileInput) {
                     const newProfileId = 'profile_' + Date.now() + '_' + importedCount;
                     const profileName = profileData.name || `Imported Profile ${importedCount + 1}`;
                     
+                    // Verificar si ya existe un perfil con ese nombre
                     let finalName = profileName;
                     let counter = 1;
                     while (Object.values(profiles).some(p => p.name === finalName)) {
@@ -1033,22 +967,15 @@ function importProfile(fileInput) {
                     importedCount++;
                 }
                 
-                // Importar datos globales si existen
-                if (importData.globalData) {
-                    importAdditionalData(importData.globalData);
-                }
-                
                 saveProfiles();
                 updateProfileUI();
                 
-                // Recargar la página para aplicar todos los cambios
-                if (confirm(window.i18n ? 
-                    window.i18n.t('profile.reloadAfterImport') : 
-                    `${importedCount} profile(s) imported! Reload page to apply all changes?`)) {
-                    location.reload();
-                }
+                alert(window.i18n ? 
+                    window.i18n.t('profile.importMultipleSuccess', { count: importedCount }) : 
+                    `${importedCount} profile(s) imported successfully!`
+                );
                 
-                console.log(`✅ ${importedCount} profile(s) imported successfully with complete data`);
+                console.log(`✅ ${importedCount} profile(s) imported successfully`);
             }
             
         } catch (error) {
@@ -1073,80 +1000,6 @@ function importProfile(fileInput) {
     reader.readAsText(file);
 }
 
-function importAdditionalData(data) {
-    try {
-        // Importar cooldowns de bosses
-        if (data.bossKillTimestamps) {
-            localStorage.setItem('bossKillTimestamps', JSON.stringify(data.bossKillTimestamps));
-        }
-        
-        if (data.weeklyKillData) {
-            localStorage.setItem('weeklyKillData', JSON.stringify(data.weeklyKillData));
-        }
-        
-        // Importar cooldowns de pokestops
-        if (data.clickedPokestops) {
-            localStorage.setItem('clickedPokestops', JSON.stringify(data.clickedPokestops));
-            // Actualizar variable global si existe
-            if (typeof clickedPokestops !== 'undefined') {
-                clickedPokestops = data.clickedPokestops;
-            }
-        }
-        
-        // Importar cooldowns de excavaciones
-        if (data.clickedExcavitions) {
-            localStorage.setItem('ex_clickedExcavitions', JSON.stringify(data.clickedExcavitions));
-            // Actualizar variable global si existe
-            if (typeof ex_clickedExcavitions !== 'undefined') {
-                ex_clickedExcavitions = data.clickedExcavitions;
-            }
-        }
-        
-        // Importar ubicaciones completadas
-        if (data.completedLocations) {
-            localStorage.setItem('completedLocations', JSON.stringify(data.completedLocations));
-        }
-        
-        // Importar rutas
-        if (data.routes) {
-            localStorage.setItem('routes', JSON.stringify(data.routes));
-        }
-        
-        // Importar áreas
-        if (data.areas) {
-            localStorage.setItem('areas', JSON.stringify(data.areas));
-        }
-        
-        // Importar configuración de visibilidad
-        if (data.bossIconsVisible !== undefined) {
-            localStorage.setItem('bossIconsVisible', data.bossIconsVisible);
-        }
-        
-        if (data.pokestopIconsVisible !== undefined) {
-            localStorage.setItem('pokestopIconsVisible', data.pokestopIconsVisible);
-        }
-        
-        if (data.excavitionIconsVisible !== undefined) {
-            localStorage.setItem('excavitionIconsVisible', data.excavitionIconsVisible);
-        }
-        
-        // Importar filtros activos
-        if (data.activeFilters) {
-            if (data.activeFilters.pokemon) {
-                localStorage.setItem('activePokemonFilters', data.activeFilters.pokemon);
-            }
-            if (data.activeFilters.location) {
-                localStorage.setItem('activeLocationFilter', data.activeFilters.location);
-            }
-        }
-        
-        console.log('✅ Additional data imported successfully');
-        
-    } catch (error) {
-        console.error('Error importing additional data:', error);
-    }
-}
-
 function showImportDialog() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -1165,51 +1018,39 @@ function showImportDialog() {
 // ========== EVENT LISTENERS PARA IMPORT/EXPORT ==========
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Esperar un poco para asegurar que los elementos estén en el DOM
-    setTimeout(function() {
-        const exportCurrentBtn = document.getElementById('export-current-profile');
-        const exportAllBtn = document.getElementById('export-all-profiles');
-        const importBtn = document.getElementById('import-profile');
-        
-        if (exportCurrentBtn) {
-            exportCurrentBtn.addEventListener('click', function() {
-                if (currentProfile) {
-                    exportProfile(currentProfile);
-                } else {
-                    alert(window.i18n ? 
-                        window.i18n.t('profile.noProfileSelected') : 
-                        'No profile selected'
-                    );
-                }
-            });
-            console.log('✅ Export current button connected');
-        } else {
-            console.warn('❌ Export current button not found');
-        }
-        
-        if (exportAllBtn) {
-            exportAllBtn.addEventListener('click', function() {
-                if (Object.keys(profiles).length === 0) {
-                    alert(window.i18n ? 
-                        window.i18n.t('profile.noProfilesToExport') : 
-                        'No profiles to export'
-                    );
-                    return;
-                }
-                exportAllProfiles();
-            });
-            console.log('✅ Export all button connected');
-        } else {
-            console.warn('❌ Export all button not found');
-        }
-        
-        if (importBtn) {
-            importBtn.addEventListener('click', function() {
-                showImportDialog();
-            });
-            console.log('✅ Import button connected');
-        } else {
-            console.warn('❌ Import button not found');
-        }
-    }, 1500); // Esperar 1.5 segundos para que todo se cargue
+    const exportCurrentBtn = document.getElementById('export-current-profile');
+    const exportAllBtn = document.getElementById('export-all-profiles');
+    const importBtn = document.getElementById('import-profile');
+    
+    if (exportCurrentBtn) {
+        exportCurrentBtn.addEventListener('click', function() {
+            if (currentProfile) {
+                exportProfile(currentProfile);
+            } else {
+                alert(window.i18n ? 
+                    window.i18n.t('profile.noProfileSelected') : 
+                    'No profile selected'
+                );
+            }
+        });
+    }
+    
+    if (exportAllBtn) {
+        exportAllBtn.addEventListener('click', function() {
+            if (Object.keys(profiles).length === 0) {
+                alert(window.i18n ? 
+                    window.i18n.t('profile.noProfilesToExport') : 
+                    'No profiles to export'
+                );
+                return;
+            }
+            exportAllProfiles();
+        });
+    }
+    
+    if (importBtn) {
+        importBtn.addEventListener('click', function() {
+            showImportDialog();
+        });
+    }
 });

@@ -3066,29 +3066,3 @@ body {
         padding-top: 70px;
     }
 }
-
-
-/* ========== IMPORT/EXPORT BUTTONS ========== */
-.profile-import-export-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #666;
-}
-
-.profile-import-export-buttons .control-btn {
-    width: 100%;
-    padding: 10px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.profile-import-export-buttons .control-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}

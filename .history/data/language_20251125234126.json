@@ -35,20 +35,7 @@
         "delete": "Delete",
         "enterName": "Enter a name for the new profile:",
         "enterNewName": "Enter a new name for the profile:",
-        "confirmDelete": "Are you sure you want to delete the profile \"{0}\"?",
-        "exportCurrent": "📤 Export Current",
-        "exportAll": "📦 Export All",
-        "import": "📥 Import Profile",
-        "noFileSelected": "No file selected",
-        "exportSuccess": "Profile \"{name}\" exported successfully with all data!",
-        "exportAllSuccess": "{count} profile(s) exported successfully!",
-        "importSuccess": "Profile \"{name}\" imported successfully!",
-        "importMultipleSuccess": "{count} profile(s) imported successfully!",
-        "importError": "Error importing profile. Please check the file format.",
-        "importReadError": "Error reading file",
-        "noProfileSelected": "No profile selected",
-        "noProfilesToExport": "No profiles to export",
-        "reloadAfterImport": "Profile imported! Reload page to apply all changes?"
+        "confirmDelete": "Are you sure you want to delete the profile \"{0}\"?"
       },
       "route": {
         "selectRoute": "Select route",
